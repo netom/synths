@@ -17,5 +17,12 @@ data Note =
     C8 | Cs8 | D8 | Eb8 | E8 | F8 | Fs8 | G8 | Gs8 | A8 | Bb8 | B8
     deriving Enum
 
-freq :: Note -> Double
+freq :: Note -> Frequency
 freq note = 440 * ( (2 ** (1/12)) ** fromIntegral (fromEnum note - 57) )
+
+freqs :: Note -> [Frequency]
+freqs note = repeat $ freq note
+
+type Waveform = Time -> Sample
+
+type Instrument = [Frequency] -> [Sample]
