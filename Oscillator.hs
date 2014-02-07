@@ -42,9 +42,19 @@ oscCos fs = oscillator cos 0 fs
 oscSawtooth :: [Frequency] -> [Sample]
 oscSawtooth fs = oscillator (\x -> -1 + x / pi) pi fs
 
+-- Ramp up sawtooth, from 0 to 1
+-- Mainly for LFO purposes
+lfoSawtooth :: [Frequency] -> [Sample]
+lfoSawtooth fs = oscillator (\x -> x / 2 / pi) 0 fs
+
 -- Ramp down sawtooth:
 oscSawtooth' :: [Frequency] -> [Sample]
 oscSawtooth' fs = oscillator (\x -> 1 - x / pi) pi fs
+
+-- Ramp down sawtooth, from 1 to 0
+-- Mainly for LFO purposes
+lfoSawtooth' :: [Frequency] -> [Sample]
+lfoSawtooth' fs = oscillator (\x -> 1 - x / 2 / pi) 0 fs
 
 -- Triangle, symmetric
 oscTriangle :: [Frequency] -> [Sample]
