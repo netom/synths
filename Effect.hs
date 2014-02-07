@@ -4,12 +4,28 @@ import Time
 import Types
 import Data.Fixed
 
+--
+-- Some convenience operators
+--
+
+-- Scaling with constant
+(<*->) :: (Fractional a) => [a] -> a -> [a]
+(<*->) = flip $ (flip (zipWith (*))) . repeat
+infixl 7 <*->
+
+-- Multiplying two streams (AM)
+(<**>) :: (Num a) => [a] -> [a] -> [a]
+(<**>) = zipWith (*)
+infixl 7 <**>
+
+-- Adding two streams (Mixing)
+(<++>) :: (Num a) => [a] -> [a] -> [a]
+(<++>) = zipWith (+)
+infixl 6 <++>
+
 -- Amount, input, output
 distortion :: Double -> Sample -> Sample
 distortion amount i = max (-1) (min 1 (amount * i))
-
-mix :: [Sample] -> [Sample] -> [Sample]
-mix s1 s2 = map ((/2) . uncurry (+)) (zip s1 s2)
 
 mixN :: [[Sample]] -> [Sample]
 mixN ss = sum heads / l : mixN tails
@@ -17,9 +33,6 @@ mixN ss = sum heads / l : mixN tails
         heads = map head ss
         tails = map tail ss
         l = fromIntegral $ length ss
-
-am :: [Sample] -> [Sample] -> [Sample]
-am = zipWith (*)
 
 --
 -- Envelopes
@@ -31,7 +44,7 @@ eID len samples = take (round $ sampleRate * len) samples
 
 
 eADSR :: Double -> Double -> Double -> Double -> Double -> [Sample] -> [Sample]
-eADSR a d s r len samples = am samples envelope
+eADSR a d s r len samples = samples <**> envelope
     where
         lens = sampleRate * len
         an = round $ sampleRate * a
