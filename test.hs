@@ -21,7 +21,7 @@ pad1 :: [Frequency] -> [Sample]
 pad1 fs = reese fs 0.2
 
 pad2 :: Time -> [Frequency] -> [Sample]
-pad2 len fs = reese fs 0.2 <**> eADSR 0.02 0.02 0.8 0.1 len
+pad2 len fs = reese fs 0.2 <**> eADSR 0.02 0.02 0.7 0.1 len
 
 kick1 :: [Sample]
 kick1 = oscSin $ eLinear 120 0 0.2
@@ -82,8 +82,14 @@ kickloop3 = cycle $ take 19600 $ kick3
 
 music =
     --bassloop1 <*-> 0.25 <++> kickloop1 <*-> 0.7 <++> padloop1 <*-> 0.05
-    fir (fDesign $ take 2 (repeat 1) ++ take 62 (repeat 0)) (take 64 $ repeat 0) padloop2 
+    fir coeffs [0|i<-[1..ntaps - 1]] padloop2
+    --padloop2
+    --kickloop2
+    where
+        ntaps = 64
+        coeffs = fDesign $ take ntaps $ [1,1] ++ [0,0..]
 
 main = do
+    --print $ fDesign $ take 128 $ [1,1,1,1] ++ [0,0..]
     pulseaudioOutput music
---main = waveOutput "test.wav" $ take (44100*30) music
+    --waveOutput "test.wav" $ take (44100*30) music

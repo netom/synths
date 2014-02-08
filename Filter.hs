@@ -1,3 +1,4 @@
+{-# Language BangPatterns #-}
 module Filter where
 
 import Time
@@ -5,6 +6,7 @@ import Types
 import Effect
 import Data.Fixed
 import Data.Complex
+import Data.List
 
 -- Cooley-Tukey
 fft :: [Complex Double] -> [Complex Double]
@@ -25,12 +27,20 @@ ifft :: [Complex Double] -> [Complex Double]
 ifft xs = map conjugate $ fft $ map conjugate xs <*-> ((1 / fromIntegral (length xs)) :+ 0)
 
 fDesign :: [Double] -> [Double]
-fDesign response = reverse halfiresp ++ tail halfiresp
+fDesign response = blackman 0.16 (length rawTaps) <**> rawTaps
     where
+        rawTaps = reverse halfiresp ++ tail halfiresp
         halfn = length response `div` 2
         ifftresp = map realPart $ ifft $ cresponse ++ reverse cresponse
         halfiresp = take halfn ifftresp 
         cresponse = map (:+ 0) response
+
+blackman :: Double -> Int -> [Double]
+blackman a n = [a0 - a1 * cos (2*pi*j/(fromIntegral n - 1)) + a2 * cos (4*pi*j/(fromIntegral n - 1))  | i <- [1..n], let j = fromIntegral i ]
+    where
+        a0 = (1 - a) / 2
+        a1 = 1 / 2
+        a2 = a / 2
 
 -- The smallest number >0 that is expressible with a Double
 epsilon :: Double
@@ -47,9 +57,6 @@ sinc x = if abs x >= taylor_n_bound then sin x / x else 1 - x^2/6 + x^4/120
 -- The third parameter is the filter delay values.
 -- The fourth parameter is the input.
 fir :: [Double] -> [Double] -> [Double] -> [Double]
-fir b z [] = []
-fir b z (x:xs) = y : fir b znext xs
+fir !b !z xs = map fst $ scanl core (0, z) xs
     where
-        dprod a b = sum $ map (uncurry (*)) (zip a b)
-        znext = x : init z
-        y = dprod (x : z) b
+        core (y, z) x = (sum ((x : z) <**> b), x : init z)
