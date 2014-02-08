@@ -2,6 +2,7 @@ module Oscillator where
 
 import Time
 import Types
+import Effect
 import Data.Fixed
 
 -- Oscillator
@@ -21,13 +22,15 @@ oscillator w t (f:fs) = s : oscillator w tn fs
         -- and returns the sample at that point in time, and the next time.
         -- This is a useful function, so I wrote this properly in order
         -- to be easier to refactor it later for toher uses
-        oscCore :: Waveform -> Frequency -> Time -> (Sample, Time)
-        oscCore w f t = (w t, timeStep f t)
+        core :: Waveform -> Frequency -> Time -> (Sample, Time)
+        core w f t = (w t, timeStep f t)
 
-        (s, tn) = oscCore w f t
+        (s, tn) = core w f t
 
 --
 -- Simple oscillators starting from 0 time
+--
+-- Should be used for synthesizing music
 --
 
 -- Simple sine oscillator
@@ -42,19 +45,9 @@ oscCos fs = oscillator cos 0 fs
 oscSawtooth :: [Frequency] -> [Sample]
 oscSawtooth fs = oscillator (\x -> -1 + x / pi) pi fs
 
--- Ramp up sawtooth, from 0 to 1
--- Mainly for LFO purposes
-lfoSawtooth :: [Frequency] -> [Sample]
-lfoSawtooth fs = oscillator (\x -> x / 2 / pi) 0 fs
-
 -- Ramp down sawtooth:
 oscSawtooth' :: [Frequency] -> [Sample]
 oscSawtooth' fs = oscillator (\x -> 1 - x / pi) pi fs
-
--- Ramp down sawtooth, from 1 to 0
--- Mainly for LFO purposes
-lfoSawtooth' :: [Frequency] -> [Sample]
-lfoSawtooth' fs = oscillator (\x -> 1 - x / 2 / pi) 0 fs
 
 -- Triangle, symmetric
 oscTriangle :: [Frequency] -> [Sample]
@@ -63,6 +56,58 @@ oscTriangle fs = map ((1-) . (*2) . abs) (oscSawtooth fs)
 -- Square, symmetric
 oscSquare :: [Frequency] -> [Sample]
 oscSquare fs = map (\x -> if (x) > 0 then 1 else -1) $ oscTriangle fs
+
+--
+-- LFOs
+--
+-- Should be used for modulation
+--
+
+-- Ramp down sawtooth, from 1 to 0
+-- Mainly for LFO purposes
+lfoSawtooth' :: [Frequency] -> [Sample]
+lfoSawtooth' fs = oscillator (\x -> 1 - x / 2 / pi) 0 fs
+
+-- Ramp up sawtooth, from 0 to 1
+-- Mainly for LFO purposes
+lfoSawtooth :: [Frequency] -> [Sample]
+lfoSawtooth fs = oscillator (\x -> x / 2 / pi) 0 fs
+
+--
+-- Envelopes
+--
+-- Envelopes are infinite lists that are often rather slow-changing.
+--
+
+-- Exponential envelope
+-- Parameters are start value and the decay coefficient c
+eExp :: Double -> Double -> [Double]
+eExp s c = s : eExp next c
+    where
+        next = s * c
+
+-- Auxiliary linear slope function (finite)
+eLinearPiece :: Double -> Double -> Time -> [Double]
+eLinearPiece s e l = [s + i*(e-s)/samples | i <- [1,2..samples]]
+    where
+        samples = l * sampleRate
+
+-- Linear envelope
+-- Parameters: start, end, length
+eLinear :: Double -> Double -> Time -> [Double]
+eLinear s e l = eLinearPiece s e l ++ repeat e
+
+-- ADSR envelope
+eADSR :: Double -> Double -> Double -> Double -> Double -> [Sample]
+eADSR a d s r len = (
+    eLinearPiece 0 1 a ++
+    eLinearPiece 1 s d ++
+    take sn (repeat s) ++
+    eLinearPiece s 0 r ++
+    repeat 0
+    )
+    where
+        sn = max 0 $ round $ sampleRate * len - (sampleRate * a + sampleRate * d)
 
 --
 -- Noise

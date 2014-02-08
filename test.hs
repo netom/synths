@@ -5,6 +5,7 @@ import Effect
 import Filter
 import Output
 import Oscillator
+import Data.Complex
 
 --
 -- Instruments
@@ -19,37 +20,69 @@ reese fs modf = oscSawtooth fs <*-> 0.5 <++> oscSawtooth (map (+modf) fs) <*-> 0
 pad1 :: [Frequency] -> [Sample]
 pad1 fs = reese fs 0.2
 
-kick1 :: [Frequency] -> [Sample]
-kick1 fs = oscSin (map (uncurry (+)) (zip fs contour))
+pad2 :: Time -> [Frequency] -> [Sample]
+pad2 len fs = reese fs 0.2 <**> eADSR 0.02 0.02 0.8 0.1 len
+
+kick1 :: [Sample]
+kick1 = oscSin $ eLinear 120 0 0.2
     where
         kickTime = 0.2 -- in seconds
         kickLen =  round $ sampleRate * kickTime
-        contourHeight = 100
+        contourHeight = 120
         contourNorm = take kickLen (lfoSawtooth' (repeat (1/kickTime))) ++ repeat 0
         contour = map (uncurry (*)) $ zip contourNorm (repeat contourHeight)
+
+drumBase :: ([Frequency] -> [Sample]) -> Frequency -> Frequency -> Time -> [Sample]
+drumBase osc fStart fDecay length = osc fKick <**> eLinear 1 0 length
+    where
+        fKick = eExp fStart fDecay
+
+kickClick1 :: [Sample]
+kickClick1 = drumBase oscTriangle 1000 0.99 0.2 <**> oscSin (repeat 80)
+
+kickClick2 :: [Sample]
+kickClick2 = noiseWhite <**> eExp 1 0.99
+
+kickBass = drumBase oscSin 100 0.9998 0.3
+
+kick2 :: [Sample]
+kick2 = kickClick1 <*-> 0.2 <++> kickBass <*-> 0.6 <++> noiseWhite <**> eExp 0.2 0.95
+
+kick3 :: [Sample]
+kick3 = kickClick2 <*-> 0.2 <++> kickBass <*-> 0.8
 
 --
 -- Loops
 --
 
 -- Bass loop
-bassloop1 =  fir (take 20 $ repeat 0.03) (take 19 $ repeat 0) $ cycle ( (eID 4 $ reese (freqs G2) 2) ++
-    (eID 2 $ reese (freqs A2) 2) ++
-    (eID 2 $ reese (freqs F2) 3) )
+bassloop1 =  cycle ( (take 88200 $ reese (freqs G2) 2) ++
+    (take 44100 $ reese (freqs A2) 2) ++
+    (take 44100 $ reese (freqs F2) 3) )
 
-padloop1 = cycle ( (eID 2 $ chord pad1 (freqs C4) tMaj) ++
-    (eID 2 $ chord pad1 (freqs G3) tMaj) ++
-    (eID 2 $ chord pad1 (freqs A3) tMin) ++
-    (eID 2 $ chord pad1 (freqs F3) tMaj))
+padloop1 = cycle ( (take 88200 $ chord pad1 (freqs C4) tMaj) ++
+    (take 88200 $ chord pad1 (freqs G3) tMaj) ++
+    (take 88200 $ chord pad1 (freqs A3) tMin) ++
+    (take 88200 $ chord pad1 (freqs F3) tMaj))
 
-kickloop1 = cycle (take 22050 (kick1 (repeat 0)))
+padloop2 = cycle ( (take 88200 $ chord (pad2 1.6) (freqs C4) tMaj) ++
+    (take 88200 $ chord (pad2 1.6) (freqs G3) tMaj) ++
+    (take 88200 $ chord (pad2 1.6) (freqs A3) tMin) ++
+    (take 88200 $ chord (pad2 1.6) (freqs F3) tMaj))
+
+kickloop1 = cycle $ take 19600 $ kick1
+
+kickloop2 = cycle $ take 19600 $ kick2
+
+kickloop3 = cycle $ take 19600 $ kick3
 
 --
 -- Assembly, master
 --
 
 music =
-    bassloop1 <*-> 0.25 <++> kickloop1 <*-> 0.7 <++> padloop1 <*-> 0.05
+    --bassloop1 <*-> 0.25 <++> kickloop1 <*-> 0.7 <++> padloop1 <*-> 0.05
+    fir (fDesign $ take 2 (repeat 1) ++ take 62 (repeat 0)) (take 64 $ repeat 0) padloop2 
 
 main = do
     pulseaudioOutput music

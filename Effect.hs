@@ -34,23 +34,3 @@ mixN ss = sum heads / l : mixN tails
         tails = map tail ss
         l = fromIntegral $ length ss
 
---
--- Envelopes
---
-
--- ID envelope
-eID :: Double -> [Sample] -> [Sample]
-eID len samples = take (round $ sampleRate * len) samples
-
-
-eADSR :: Double -> Double -> Double -> Double -> Double -> [Sample] -> [Sample]
-eADSR a d s r len samples = samples <**> envelope
-    where
-        lens = sampleRate * len
-        an = round $ sampleRate * a
-        dn = sampleRate * d
-        sn = len - (a + d)
-        rn = sampleRate * r
-        envelope = take an [0,1 / fromIntegral an..]
-        
-        
