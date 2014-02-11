@@ -56,18 +56,16 @@ kick3 = kickClick2 <*-> 0.2 <++> kickBass <*-> 0.8
 --
 
 bass1 :: Time -> [Frequency] -> [Sample]
-bass1 len fs = oscTriangle fs <**> eADSR 0.01 0.01 0.5 0.07 len
+bass1 len fs = fir coeffs (replicate (ntaps - 1) 0) (oscSin fs <*-> 0.5 <++> oscSawtooth (fs <*-> 2) <*-> 0.5) <**> eADSR 0.01 0.01 0.8 0.07 len
+    where
+        ntaps = 64
+        coeffs = fDesign $ take ntaps $ [1,1,1] ++ [0,0..]
 
 --
 -- Loops
 --
 
--- Bass loop
-bassloop1 =  cycle ( (take 88200 $ reese (freqs G2) 2) ++
-    (take 44100 $ reese (freqs A2) 2) ++
-    (take 44100 $ reese (freqs F2) 3) )
-
-bassloop2 = cycle $ take 5975 $ bass1 0 (freqs C2)
+bassloop1 = cycle $ take 5975 $ bass1 0 (freqs C1)
 
 padloop1 = cycle ( (take 88200 $ chord pad1 (freqs C4) tMaj) ++
     (take 88200 $ chord pad1 (freqs G3) tMaj) ++
@@ -89,18 +87,9 @@ kickloop3 = cycle $ take 19600 $ kick3
 -- Assembly, master
 --
 
-
-
 music =
-    --bassloop1 <*-> 0.25 <++> kickloop1 <*-> 0.7 <++> padloop1 <*-> 0.05
-    --fir coeffs [0|i<-[1..ntaps - 1]] padloop2
-    --padloop2
-    --kickloop2 <*-> 0.6 <++> bassloop2 <*-> 0.4
-    --where
-    --    ntaps = 64
-    --    coeffs = fDesign $ take ntaps $ [1,1] ++ [0,0..]
+    kickloop2 <*-> 0.6 <++> bassloop1 <*-> 0.4
 
 main = do
-    --print $ fDesign $ take 128 $ [1,1,1,1] ++ [0,0..]
     pulseaudioOutput music
     --waveOutput "test.wav" $ take (44100*30) music
