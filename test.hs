@@ -38,7 +38,7 @@ drumBase osc fStart fDecay length = osc fKick <**> eLinear 1 0 length
         fKick = eExp fStart fDecay
 
 kickClick1 :: [Sample]
-kickClick1 = drumBase oscTriangle 1000 0.99 0.2 <**> oscSin (repeat 80)
+kickClick1 = drumBase oscTriangle 2500 0.99 0.2 <**> oscSin (repeat 80)
 
 kickClick2 :: [Sample]
 kickClick2 = noiseWhite <**> eExp 1 0.99
@@ -46,10 +46,17 @@ kickClick2 = noiseWhite <**> eExp 1 0.99
 kickBass = drumBase oscSin 100 0.9998 0.3
 
 kick2 :: [Sample]
-kick2 = kickClick1 <*-> 0.2 <++> kickBass <*-> 0.6 <++> noiseWhite <**> eExp 0.2 0.95
+kick2 = kickClick1 <*-> 0.3 <++> kickBass <*-> 0.7
 
 kick3 :: [Sample]
 kick3 = kickClick2 <*-> 0.2 <++> kickBass <*-> 0.8
+
+--
+-- Basses
+--
+
+bass1 :: Time -> [Frequency] -> [Sample]
+bass1 len fs = oscTriangle fs <**> eADSR 0.01 0.01 0.5 0.07 len
 
 --
 -- Loops
@@ -59,6 +66,8 @@ kick3 = kickClick2 <*-> 0.2 <++> kickBass <*-> 0.8
 bassloop1 =  cycle ( (take 88200 $ reese (freqs G2) 2) ++
     (take 44100 $ reese (freqs A2) 2) ++
     (take 44100 $ reese (freqs F2) 3) )
+
+bassloop2 = cycle $ take 5975 $ bass1 0 (freqs C2)
 
 padloop1 = cycle ( (take 88200 $ chord pad1 (freqs C4) tMaj) ++
     (take 88200 $ chord pad1 (freqs G3) tMaj) ++
@@ -72,7 +81,7 @@ padloop2 = cycle ( (take 88200 $ chord (pad2 1.6) (freqs C4) tMaj) ++
 
 kickloop1 = cycle $ take 19600 $ kick1
 
-kickloop2 = cycle $ take 19600 $ kick2
+kickloop2 = cycle $ take 23900 $ kick2 -- Shores 01
 
 kickloop3 = cycle $ take 19600 $ kick3
 
@@ -80,14 +89,16 @@ kickloop3 = cycle $ take 19600 $ kick3
 -- Assembly, master
 --
 
+
+
 music =
     --bassloop1 <*-> 0.25 <++> kickloop1 <*-> 0.7 <++> padloop1 <*-> 0.05
-    fir coeffs [0|i<-[1..ntaps - 1]] padloop2
+    --fir coeffs [0|i<-[1..ntaps - 1]] padloop2
     --padloop2
-    --kickloop2
-    where
-        ntaps = 64
-        coeffs = fDesign $ take ntaps $ [1,1] ++ [0,0..]
+    --kickloop2 <*-> 0.6 <++> bassloop2 <*-> 0.4
+    --where
+    --    ntaps = 64
+    --    coeffs = fDesign $ take ntaps $ [1,1] ++ [0,0..]
 
 main = do
     --print $ fDesign $ take 128 $ [1,1,1,1] ++ [0,0..]
