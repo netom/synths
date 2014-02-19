@@ -51,6 +51,18 @@ kick2 = kickClick1 <*-> 0.3 <++> kickBass <*-> 0.7
 kick3 :: [Sample]
 kick3 = kickClick2 <*-> 0.2 <++> kickBass <*-> 0.8
 
+kick4 :: [Sample]
+kick4 = drumBase oscTriangle 2500 0.995 0.8 <*-> 0.2 <++> drumBase oscSin 120 0.9998 0.3 <*-> 0.8 -- Hááááárd!!!
+
+pop :: Frequency -> [Sample]
+pop f = oscSin (oscSin (repeat (f*2.123)) <*-> f <**> eExp 1 0.999 <++> repeat f) <**> eExp 1 0.999
+
+openhat :: [Sample]
+openhat = noiseWhite <**> eExp 1 0.9995
+
+closedhat :: [Sample]
+closedhat = noiseWhite <**> eExp 1 0.999
+
 --
 -- Basses
 --
@@ -65,7 +77,13 @@ bass1 len fs = fir coeffs (replicate (ntaps - 1) 0) (oscSin fs <*-> 0.5 <++> osc
 -- Loops
 --
 
-bassloop1 = cycle $ take 5975 $ bass1 0 (freqs C1)
+-- bassloop1 = cycle $ take 5975 $ bass1 0 (freqs C1)
+-- Bass loop
+bassloop1 =  cycle ( (take 88200 $ reese (freqs G2) 2) ++
+    (take 44100 $ reese (freqs A2) 2) ++
+    (take 44100 $ reese (freqs F2) 3) )
+
+bassloop2 = cycle $ take 5000 $ bass1 0 (freqs A1)
 
 padloop1 = cycle ( (take 88200 $ chord pad1 (freqs C4) tMaj) ++
     (take 88200 $ chord pad1 (freqs G3) tMaj) ++
@@ -83,12 +101,44 @@ kickloop2 = cycle $ take 23900 $ kick2 -- Shores 01
 
 kickloop3 = cycle $ take 19600 $ kick3
 
+kickloop4 = cycle $ take 20000 $ kick4
+
+poploop = cycle (
+    (concat $ replicate 3 $
+    (take 10000 $ pop (freq A4)) ++
+    (take 20000 $ pop (freq C5)) ++
+    (take 10000 $ pop (freq A4)) ++
+    (take 10000 $ pop (freq B4)) ++
+    (take 5000 $ pop (freq A4)) ++
+    (take 15000 $ pop (freq B4)) ++
+    (take 10000 $ pop (freq G4)) )++
+    --
+    (take 10000 $ pop (freq A4)) ++
+    (take 20000 $ pop (freq C5)) ++
+    (take 10000 $ pop (freq A4)) ++
+    (take 10000 $ pop (freq B4)) ++
+    (take 5000 $ pop (freq A4)) ++
+    (take 10000 $ pop (freq B4)) ++
+    (take 5000 $ pop (freq C5)) ++
+    (take 5000 $ pop (freq D5)) ++
+    (take 5000 $ pop (freq E5)) )
+
 --
 -- Assembly, master
 --
 
 music =
-    kickloop2 <*-> 0.6 <++> bassloop1 <*-> 0.4
+    --kickloop2 <*-> 0.6 <++> bassloop1 <*-> 0.4
+    --bassloop1 <*-> 0.25 <++> kickloop1 <*-> 0.7 <++> padloop1 <*-> 0.05
+    --fir coeffs [0|i<-[1..ntaps - 1]] padloop2
+    --padloop2
+    --kickloop2 <*-> 0.6 <++> bassloop2 <*-> 0.4
+    --where
+    --    ntaps = 64
+    --    coeffs = fDesign $ take ntaps $ [1,1] ++ [0,0..]
+    --kickloop4
+    --pop 120
+    (take 320000 kickloop4) ++ poploop <++> kickloop4
 
 main = do
     pulseaudioOutput music
