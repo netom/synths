@@ -16,5 +16,5 @@ Executable test
   hs-source-dirs: src
   main-is: test.hs
   --ghc-options: -prof -rtsopts -fprof-auto
-  ghc-options: -O2
+  ghc-options: -O3
 

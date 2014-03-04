@@ -13,21 +13,13 @@ import qualified Data.List.Stream as S
 --TODO: rewrite this to be able to use stream-fusion
 oscillator :: Waveform -> Time -> [Frequency] -> [Sample]
 oscillator _ _ [] = []
-oscillator w t (f:fs) = s : oscillator w tn fs
+oscillator w t fs = S.map snd $ S.scanl foldFunc (t, 0) fs --s : oscillator w tn fs
     where
         -- Advances time by one sample based on frequency
         timeStep :: Frequency -> Time -> Time
         timeStep f t = mod' (t + f * 2 * pi / sampleRate) (2*pi)
 
-        -- Oscillator core
-        -- It takes a waveform, a frequency and current time
-        -- and returns the sample at that point in time, and the next time.
-        -- This is a useful function, so I wrote this properly in order
-        -- to be easier to refactor it later for toher uses
-        core :: Waveform -> Frequency -> Time -> (Sample, Time)
-        core w f t = (w t, timeStep f t)
-
-        (s, tn) = core w f t
+        foldFunc (t, _) f = (timeStep f t, w t)
 
 --
 -- Simple oscillators starting from 0 time
