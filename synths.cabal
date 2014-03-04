@@ -1,0 +1,17 @@
+name:           Synths
+version:        0.0.0
+cabal-version:  >= 1.8
+license:        BSD3
+author:         Fábián Tamás László <giganetom@gmail.com>
+synopsis:       A sound and music synthesizer framework
+build-type:     Simple
+
+Executable test
+  build-depends: base
+               , containers
+               , WAVE
+               , pulse-simple
+               , stream-fusion
+
+  main-is: test.hs
+
