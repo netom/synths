@@ -5,3 +5,8 @@
 *.mp3
 cabal-dev
 dist
+*.aux
+*.hp
+*.prof
+*.ps
+

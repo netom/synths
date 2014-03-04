@@ -1,4 +1,3 @@
-{-# Language BangPatterns #-}
 module Filter where
 
 import Time

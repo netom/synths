@@ -4,11 +4,13 @@ import Time
 import Types
 import Effect
 import Data.Fixed
+import qualified Data.List.Stream as S
 
 -- Oscillator
 -- Takes a waveform and a frequecy stream
 -- And returns a sample stream
 -- The waveform MUST have a 2 PI period
+--TODO: rewrite this to be able to use stream-fusion
 oscillator :: Waveform -> Time -> [Frequency] -> [Sample]
 oscillator _ _ [] = []
 oscillator w t (f:fs) = s : oscillator w tn fs
@@ -51,11 +53,11 @@ oscSawtooth' fs = oscillator (\x -> 1 - x / pi) pi fs
 
 -- Triangle, symmetric
 oscTriangle :: [Frequency] -> [Sample]
-oscTriangle fs = map ((1-) . (*2) . abs) (oscSawtooth fs)
+oscTriangle fs = S.map ((1-) . (*2) . abs) (oscSawtooth fs)
 
 -- Square, symmetric
 oscSquare :: [Frequency] -> [Sample]
-oscSquare fs = map (\x -> if (x) > 0 then 1 else -1) $ oscTriangle fs
+oscSquare fs = S.map (\x -> if (x) > 0 then 1 else -1) $ oscTriangle fs
 
 --
 -- LFOs
@@ -82,9 +84,7 @@ lfoSawtooth fs = oscillator (\x -> x / 2 / pi) 0 fs
 -- Exponential envelope
 -- Parameters are start value and the decay coefficient c
 eExp :: Double -> Double -> [Double]
-eExp s c = s : eExp next c
-    where
-        next = s * c
+eExp s c = s : eExp (s*c) c
 
 -- Auxiliary linear slope function (finite)
 eLinearPiece :: Double -> Double -> Time -> [Double]
@@ -95,16 +95,16 @@ eLinearPiece s e l = [s + i*(e-s)/samples | i <- [1,2..samples]]
 -- Linear envelope
 -- Parameters: start, end, length
 eLinear :: Double -> Double -> Time -> [Double]
-eLinear s e l = eLinearPiece s e l ++ repeat e
+eLinear s e l = eLinearPiece s e l ++ S.repeat e
 
 -- ADSR envelope
 eADSR :: Double -> Double -> Double -> Double -> Double -> [Sample]
 eADSR a d s r len = (
     eLinearPiece 0 1 a ++
     eLinearPiece 1 s d ++
-    take sn (repeat s) ++
+    S.take sn (S.repeat s) ++
     eLinearPiece s 0 r ++
-    repeat 0
+    S.repeat 0
     )
     where
         sn = max 0 $ round $ sampleRate * len - (sampleRate * a + sampleRate * d)
@@ -114,7 +114,7 @@ eADSR a d s r len = (
 --
 
 noiseWhite :: [Double]
-noiseWhite = map (\x -> fromIntegral x / 2^31-0.5) (noiseWhite' 0)
+noiseWhite = S.map (\x -> fromIntegral x / 2^31-0.5) (noiseWhite' 0)
     where
         noiseWhite' :: Int -> [Int]
         noiseWhite' seed =  a:noiseWhite' a
