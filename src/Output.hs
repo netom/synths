@@ -16,15 +16,19 @@ chunks size list
 
 pulseaudioOutput :: Stream -> IO ()
 pulseaudioOutput stream = do
-    s<-simpleNew Nothing "Synths" Play Nothing "Synths PCM output"
+    s <- simpleNew Nothing "Synths" Play Nothing "Synths PCM output"
         (SampleSpec (F32 LittleEndian) 44100 1) Nothing Nothing
+
     let f32stream = map double2Float stream
+
     mapM_ (simpleWrite s) (chunks 1000 f32stream)
+
     simpleDrain s
     simpleFree s
 
-waveOutput :: String -> Stream -> IO ()
-waveOutput filename stream =
+waveOutput :: String -> Int -> Stream -> IO ()
+waveOutput filename length stream =
+    --writeFile filename $ "RIFF" ++ map (\x -> [doubleToSample x]) stream
     putWAVEFile
         filename 
-        $ WAVE (WAVEHeader 1 44100 16 Nothing) $ map (\x -> [doubleToSample x]) stream
+        $ WAVE (WAVEHeader 1 44100 16 (Just length)) $ map (\x -> [doubleToSample x]) $ take length stream

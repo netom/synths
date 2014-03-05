@@ -103,6 +103,7 @@ kickloop3 = cycle $ take 19600 $ kick3
 
 kickloop4 = cycle $ take 20000 $ kick4
 
+-- TODO: try difference lists?
 poploop = cycle (
     (concat $ replicate 3 $
     (take 10000 $ pop (freq A4)) ++
@@ -143,5 +144,7 @@ music =
     --poploop
 
 main = do
-    pulseaudioOutput music
-    --waveOutput "test.wav" $ take (44100*30) music
+    pulseaudioOutput $ take (44100*100) music
+    --pulseaudioOutput $ replicate (44100*30) 0
+    --waveOutput "test.wav" (44100*100) $ music
+    --waveOutput "test.wav" (44100 * 30) $ repeat 0

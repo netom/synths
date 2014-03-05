@@ -57,8 +57,6 @@ sinc x = if abs x >= taylor_n_bound then sin x / x else 1 - x^2/6 + x^4/120
 -- The second parameter is the filter delay values.
 -- The third parameter is the input.
 fir :: [Double] -> [Double] -> [Double] -> [Double]
-fir b z xs = S.map fst $ S.scanl core (0, z) xs
+fir b z xs = S.map fst $ S.scanl foldFunc (0, z) xs
     where
-        core (_, zz) x = (S.sum $ nextzz <**> b, S.init nextzz)
-            where
-                nextzz = x : zz
+        foldFunc (_, zz) x = (S.sum $ x : zz <**> b, x : S.init zz)
