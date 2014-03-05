@@ -59,4 +59,6 @@ sinc x = if abs x >= taylor_n_bound then sin x / x else 1 - x^2/6 + x^4/120
 fir :: [Double] -> [Double] -> [Double] -> [Double]
 fir b z xs = S.map fst $ S.scanl foldFunc (0, z) xs
     where
-        foldFunc (_, zz) x = (S.sum $ x : zz <**> b, x : S.init zz)
+        foldFunc (_, z) x = (S.sum $ xz <**> b, S.init xz)
+            where
+                xz = x : z

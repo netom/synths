@@ -35,11 +35,9 @@ quantize n i = fromIntegral (round (i * n)) / n
 
 -- Mix N sample streams to one
 mixN :: [[Sample]] -> [Sample]
-mixN ss = S.sum heads / l : mixN tails
+mixN ss = S.foldr foldFunc [] (S.transpose ss)
     where
-        heads = S.map head ss
-        tails = S.map tail ss
-        l = fromIntegral $ S.length ss
+        foldFunc x xs = (S.sum x / fromIntegral (S.length x)) : xs
 
 -- Echo
 echo :: Int -> [Sample] -> [Sample]

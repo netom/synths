@@ -28,7 +28,7 @@ pulseaudioOutput stream = do
 
 waveOutput :: String -> Int -> Stream -> IO ()
 waveOutput filename length stream =
-    --writeFile filename $ "RIFF" ++ map (\x -> [doubleToSample x]) stream
+    --writeFile filename $ "RIFF" ++ (show $ map (\x -> [doubleToSample x]) $ take length stream)
     putWAVEFile
         filename 
         $ WAVE (WAVEHeader 1 44100 16 (Just length)) $ map (\x -> [doubleToSample x]) $ take length stream

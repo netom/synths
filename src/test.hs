@@ -144,7 +144,7 @@ music =
     --poploop
 
 main = do
-    pulseaudioOutput $ take (44100*100) music
-    --pulseaudioOutput $ replicate (44100*30) 0
-    --waveOutput "test.wav" (44100*100) $ music
+    pulseaudioOutput $ take (44100 * 30) music
+    --pulseaudioOutput $ replicate (44100 * 30) 0
+    --waveOutput "test.wav" (44100 * 30) $ music
     --waveOutput "test.wav" (44100 * 30) $ repeat 0
