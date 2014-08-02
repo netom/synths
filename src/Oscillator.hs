@@ -1,55 +1,42 @@
+{-# Language Arrows #-}
 module Oscillator where
 
 import Time
 import Types
 import Effect
 import Data.Fixed
+import FRP.Yampa
 import qualified Data.List.Stream as S
 
--- Oscillator
--- Takes a waveform and a frequecy stream
--- And returns a sample stream
--- The waveform MUST have a 2 PI period
---TODO: rewrite this to be able to use stream-fusion
-oscillator :: Waveform -> Time -> [Frequency] -> [Sample]
-oscillator _ _ [] = []
-oscillator w t fs = S.map snd $ S.scanl foldFunc (t, 0) fs --s : oscillator w tn fs
-    where
-        -- Advances time by one sample based on frequency
-        timeStep :: Frequency -> Time -> Time
-        timeStep f t = mod' (t + f * 2 * pi / sampleRate) (2*pi)
-
-        foldFunc (t, _) f = (timeStep f t, w t)
-
---
--- Simple oscillators starting from 0 time
---
--- Should be used for synthesizing music
---
+oscillator :: Waveform -> Frequency -> SF CV Sample
+oscillator w f0 = proc cv -> do
+    let f = f0 * (2 ** cv)
+    phi <- integral -< 2 * pi * f
+    returnA -< w phi
 
 -- Simple sine oscillator
-oscSin :: [Frequency] -> [Sample]
-oscSin fs = oscillator sin 0 fs
+oscSin :: Frequency -> SF CV Sample
+oscSin = oscillator sin
 
 -- Cosine wave
-oscCos :: [Frequency] -> [Sample]
-oscCos fs = oscillator cos 0 fs
+oscCos :: Frequency -> SF CV Sample
+oscCos = oscillator cos
 
 -- Ramp up sawtooth:
-oscSawtooth :: [Frequency] -> [Sample]
-oscSawtooth fs = oscillator (\x -> -1 + x / pi) pi fs
+oscSawtooth :: Frequency -> SF CV Sample
+oscSawtooth = oscillator (\x -> -1 + x / pi)
 
 -- Ramp down sawtooth:
-oscSawtooth' :: [Frequency] -> [Sample]
-oscSawtooth' fs = oscillator (\x -> 1 - x / pi) pi fs
+oscSawtooth' :: Frequency -> SF CV Sample
+oscSawtooth' = oscillator (\x -> 1 - x / pi)
 
 -- Triangle, symmetric
-oscTriangle :: [Frequency] -> [Sample]
-oscTriangle fs = S.map ((1-) . (*2) . abs) (oscSawtooth fs)
+oscTriangle :: Frequency -> SF CV Sample
+oscTriangle = oscSawtooth >>> arr ((1-) . (*2) . abs)
 
 -- Square, symmetric
-oscSquare :: [Frequency] -> [Sample]
-oscSquare fs = S.map (\x -> if (x) > 0 then 1 else -1) $ oscTriangle fs
+oscSquare :: Frequency -> SF CV Sample
+oscSquare fs = oscTriangle >>> arr (\x -> if (x) > 0 then 1 else -1)
 
 --
 -- LFOs
@@ -59,13 +46,13 @@ oscSquare fs = S.map (\x -> if (x) > 0 then 1 else -1) $ oscTriangle fs
 
 -- Ramp down sawtooth, from 1 to 0
 -- Mainly for LFO purposes
-lfoSawtooth' :: [Frequency] -> [Sample]
-lfoSawtooth' fs = oscillator (\x -> 1 - x / 2 / pi) 0 fs
+lfoSawtooth' :: Frequency -> SF CV Sample
+lfoSawtooth' = oscillator (\x -> 1 - x / 2 / pi)
 
 -- Ramp up sawtooth, from 0 to 1
 -- Mainly for LFO purposes
-lfoSawtooth :: [Frequency] -> [Sample]
-lfoSawtooth fs = oscillator (\x -> x / 2 / pi) 0 fs
+lfoSawtooth :: Frequency -> SF CV Sample
+lfoSawtooth = oscillator (\x -> x / 2 / pi)
 
 --
 -- Envelopes

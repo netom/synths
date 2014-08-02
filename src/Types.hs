@@ -4,6 +4,9 @@ type Frequency = Double
 type Time = Double
 type Sample = Double
 type Stream = [Sample]
+type Waveform = Time -> Sample
+type Instrument = [Frequency] -> [Sample]
+type CV = Double
 
 data Note =
     C0 | Cs0 | D0 | Eb0 | E0 | F0 | Fs0 | G0 | Gs0 | A0 | Bb0 | B0 |
@@ -23,6 +26,3 @@ freq note = 440 * ( (2 ** (1/12)) ** fromIntegral (fromEnum note - 57) )
 freqs :: Note -> [Frequency]
 freqs note = repeat $ freq note
 
-type Waveform = Time -> Sample
-
-type Instrument = [Frequency] -> [Sample]
