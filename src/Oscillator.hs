@@ -10,7 +10,6 @@ import qualified Data.List.Stream as S
 -- Takes a waveform and a frequecy stream
 -- And returns a sample stream
 -- The waveform MUST have a 2 PI period
---TODO: rewrite this to be able to use stream-fusion
 oscillator :: Waveform -> Time -> [Frequency] -> [Sample]
 oscillator _ _ [] = []
 oscillator w t fs = S.map snd $ S.scanl foldFunc (t, 0) fs --s : oscillator w tn fs

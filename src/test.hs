@@ -52,7 +52,7 @@ kick3 :: [Sample]
 kick3 = kickClick2 <*-> 0.2 <++> kickBass <*-> 0.8
 
 kick4 :: [Sample]
-kick4 = drumBase oscTriangle 1000 0.995 0.8 <*-> 0.2 <++> drumBase oscSin 110 0.9999 0.3 <*-> 0.8 -- Hááááárd!!!
+kick4 = drumBase oscTriangle 1000 0.996 0.8 <*-> 0.2 <++> drumBase oscSin 110 0.9999 0.3 <*-> 0.8 -- Hááááárd!!!
 
 pop :: Frequency -> [Sample]
 pop f = oscSin (oscSin (repeat (f*2.123)) <*-> f <**> eExp 1 0.999 <++> repeat f) <**> eExp 1 0.999
@@ -131,20 +131,22 @@ poploop = cycle (
 music =
     --kickloop2 <*-> 0.6 <++> bassloop1 <*-> 0.4
     --bassloop1 <*-> 0.25 <++> kickloop1 <*-> 0.7 <++> padloop1 <*-> 0.05
-    fir coeffs [0|i<-[1..ntaps - 1]] padloop2
-    --padloop2
+    --fir coeffs [0|i<-[1..ntaps - 1]] padloop2
+    -- padloop2
     --kickloop2 <*-> 0.6 <++> bassloop2 <*-> 0.4
-    where
-        ntaps = 64
-        coeffs = fDesign $ take ntaps $ [1,1] ++ [0,0..]
-    --kickloop4
+    --where
+    --    ntaps = 64
+    --    coeffs = fDesign $ take ntaps $ [1,1] ++ [0,0..]
+    kickloop4
     --pop 120
     --(take 160000 kickloop4) <*-> 0.5 ++ (poploop <*-> 0.5 <++> kickloop4 <*-> 0.5)
     --reverb poploop
     --poploop
 
 main = do
-    pulseaudioOutput $ take (44100 * 30) music
+    --pulseaudioOutput $ take (44100 * 30) music
+    pcmOutput $ music
     --pulseaudioOutput $ replicate (44100 * 30) 0
     --waveOutput "test.wav" (44100 * 30) $ music
     --waveOutput "test.wav" (44100 * 30) $ repeat 0
+    --pcmOutput [-1]
