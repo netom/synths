@@ -62,3 +62,56 @@ fir b z xs = S.map fst $ S.scanl foldFunc (0, z) xs
         foldFunc (_, z) x = (S.sum $ xz <**> b, S.init xz)
             where
                 xz = x : z
+
+lp303' :: (Double, Double, Double, Double, Double) -> [Double] -> [Double] -> [Double] -> [Double] -> [Double]
+lp303' (z0, z1, z2, z3, z4) (hpf:hpfs) (q:qs) (fc:fcs) (x:xs) = y : lp303' (zn0, zn1, zn2, zn3, zn4) hpfs qs fcs xs
+    where
+        (y, (zn0, zn1, zn2, zn3, zn4)) = lp303 (z0, z1, z2, z3, z4) hpf q fc x
+
+lp303 :: (Double, Double, Double, Double, Double) -> Double -> Double -> Double -> Double -> (Double, (Double, Double, Double, Double, Double))
+lp303 (z0, z1, z2, z3, z4) hpf q fc x = (na * y4, (zn0, zn1, zn2, zn3, zn4))
+    where
+        clip x = x / (1 + abs x)
+
+        -- hpf, nk: nagy k
+        nk = fc * pi;
+        ah = (nk - 2) / (nk + 2);
+        bh = 2 / (nk + 2);
+
+        -- set q, na: nagy a
+        k = 20 * q;
+        na = 1 + 0.5 * k;
+
+        -- fc
+        cutoff = (cutoff * cutoff);
+        fc = if cutoff <= 0 then 0.02 else (if cutoff >= 1.0 then 0.999 else cutoff)
+
+        a = pi * fc * 2 * tan (0.5 * a) -- dewarping, not required with 2x oversampling
+        ainv = 1 / a
+        a2 = a * a
+        b  = 2 * a + 1
+        b2 = b * b
+        c  = 1 / (2 * a2 * a2 - 4 * a2 * b2 + b2 * b2)
+        g0 = 2 * a2 * a2 * c
+        g  = g0 * bh
+
+        -- current state
+        s0 = (a2 * a * z0 + a2 * b * z1 + z2 * (b2 - 2 * a2) * a + z3 * (b2 - 3 * a2) * b) * c
+        s  = bh*s0 - z4
+
+        -- input clipping
+        y0 = clip(x - k * (g * x + s) / (1 + g * k))
+        y5 = g * y0 + s
+
+        -- compute integrator outputs
+        y4 = g0 * y0 + s0
+        y3 = (b * y4 - z3) * ainv
+        y2 = (b * y3 - a * y4 - z2) * ainv
+        y1 = (b * y2 - a * y3 - z1) * ainv
+
+        -- update filter state
+        zn0 = z0 + 4*a*(y0 - y1 + y2)
+        zn1 = z1 + 2*a*(y1 - 2*y2 + y3)
+        zn2 = z2 + 2*a*(y2 - 2*y3 + y4)
+        zn3 = z3 + 2*a*(y3 - 2*y4)
+        zn4 = bh * y4 + ah * y5

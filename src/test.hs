@@ -137,15 +137,17 @@ music =
     --where
     --    ntaps = 64
     --    coeffs = fDesign $ take ntaps $ [1,1] ++ [0,0..]
-    kickloop4
+    --kickloop4
     --pop 120
     --(take 160000 kickloop4) <*-> 0.5 ++ (poploop <*-> 0.5 <++> kickloop4 <*-> 0.5)
     --reverb poploop
     --poploop
+    lp303' (0, 0, 0, 0, 0) (repeat 1) (repeat 1) (repeat 1) (oscSawtooth (repeat 440))
+    --oscSawtooth (repeat 440)
 
 main = do
     --pulseaudioOutput $ take (44100 * 30) music
-    pcmOutput $ music
+    pcmOutput $ take 100000 music
     --pulseaudioOutput $ replicate (44100 * 30) 0
     --waveOutput "test.wav" (44100 * 30) $ music
     --waveOutput "test.wav" (44100 * 30) $ repeat 0
