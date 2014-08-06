@@ -68,7 +68,7 @@ closedhat = noiseWhite <**> eExp 1 0.999
 --
 
 bass1 :: Time -> [Frequency] -> [Sample]
-bass1 len fs = fir coeffs (replicate (ntaps - 1) 0) (oscSin fs <*-> 0.5 <++> oscSawtooth (fs <*-> 2) <*-> 0.5) <**> eADSR 0.01 0.01 0.8 0.07 len
+bass1 len fs = oscSawtooth (fs <*-> 2) <*-> 0.5 <**> eADSR 0.01 0.01 0.8 0.07 len
     where
         ntaps = 64
         coeffs = fDesign $ take ntaps $ [1,1,1] ++ [0,0..]
@@ -142,12 +142,17 @@ music =
     --(take 160000 kickloop4) <*-> 0.5 ++ (poploop <*-> 0.5 <++> kickloop4 <*-> 0.5)
     --reverb poploop
     --poploop
-    lp303' (0, 0, 0, 0, 0) (repeat 1) (repeat 1) (repeat 1) (oscSawtooth (repeat 440))
+    -- lp303' : z hpf q fc x
+    --lp303' (0, 0, 0, 0, 0) (repeat 0) (oscSin (repeat 0.3) </-> 3 <+-> 0.5) (oscSin (repeat 0.2) </-> 3 <+-> 0.5) (oscSawtooth (repeat 110))
+    --lp303' (0, 0, 0, 0, 0) (oscSin (repeat 0.3) </-> 2 <+-> 0.5) (repeat 0) (repeat 0.5) (oscSawtooth (repeat 110))
+    --lp303' (0, 0, 0, 0, 0) (repeat 0.5) (repeat 0) (oscSin (repeat 0.3) </-> 3 <+-> 0.5) (oscSawtooth (repeat 110))
     --oscSawtooth (repeat 440)
+    lp303' (0, 0, 0, 0, 0) (repeat 0.0007) (repeat 0.66) (oscSin (repeat 0.3) <*-> 0.4 <+-> 0.6) (bassloop2)
+    --bassloop2
 
 main = do
     --pulseaudioOutput $ take (44100 * 30) music
-    pcmOutput $ take 100000 music
+    pcmOutput music
     --pulseaudioOutput $ replicate (44100 * 30) 0
     --waveOutput "test.wav" (44100 * 30) $ music
     --waveOutput "test.wav" (44100 * 30) $ repeat 0

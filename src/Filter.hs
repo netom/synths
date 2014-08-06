@@ -71,22 +71,21 @@ lp303' (z0, z1, z2, z3, z4) (hpf:hpfs) (q:qs) (fc:fcs) (x:xs) = y : lp303' (zn0,
 lp303 :: (Double, Double, Double, Double, Double) -> Double -> Double -> Double -> Double -> (Double, (Double, Double, Double, Double, Double))
 lp303 (z0, z1, z2, z3, z4) hpf q fc x = (na * y4, (zn0, zn1, zn2, zn3, zn4))
     where
-        clip x = x / (1 + abs x)
-
-        -- hpf, nk: nagy k
-        nk = fc * pi;
-        ah = (nk - 2) / (nk + 2);
-        bh = 2 / (nk + 2);
-
         -- set q, na: nagy a
         k = 20 * q;
         na = 1 + 0.5 * k;
 
         -- fc
-        cutoff = (cutoff * cutoff);
-        fc = if cutoff <= 0 then 0.02 else (if cutoff >= 1.0 then 0.999 else cutoff)
+        cutoff = fc**2
+        fc' = if cutoff <= 0 then 0.02 else (if cutoff >= 1.0 then 0.999 else cutoff)
 
-        a = pi * fc * 2 * tan (0.5 * a) -- dewarping, not required with 2x oversampling
+        -- hpf, nk: nagy k
+        nk = fc' * pi;
+        ah = (nk - 2) / (nk + 2);
+        bh = 2 / (nk + 2);
+
+        -- run
+        a = 2 * tan (0.5 * pi * fc') -- dewarping, not required with 2x oversampling
         ainv = 1 / a
         a2 = a * a
         b  = 2 * a + 1
@@ -100,7 +99,8 @@ lp303 (z0, z1, z2, z3, z4) hpf q fc x = (na * y4, (zn0, zn1, zn2, zn3, zn4))
         s  = bh*s0 - z4
 
         -- input clipping
-        y0 = clip(x - k * (g * x + s) / (1 + g * k))
+        clip x = x / (1 + abs x)
+        y0 = clip $ x - k * (g * x + s) / (1 + g * k)
         y5 = g * y0 + s
 
         -- compute integrator outputs

@@ -20,7 +20,7 @@ pcmOutput stream = do
     B.putStr $ B.concat $ map (to4Chars . toUInt16) stream
     where
         toUInt16 :: Double -> Int
-        toUInt16 d = round $ (1 + d) * (2 ^ 14 - 1)
+        toUInt16 d = round $ (1 + max (-1) (min 1 d)) * (2 ^ 14 - 1)
 
         to4Chars :: Int -> B.ByteString
         to4Chars i = B.pack [ fromIntegral $ i `mod` 256, fromIntegral $ (i `div` 256) `mod` 256 ]

@@ -20,10 +20,25 @@ infixl 7 <*->
 (<**>) = S.zipWith (*)
 infixl 7 <**>
 
+-- Scaling with constant (division)
+(</->) :: (Fractional a) => [a] -> a -> [a]
+(</->) = flip $ (flip (S.zipWith (/))) . S.repeat
+infixl 7 </->
+
+-- Dividing two streams (AM)
+(<//>) :: (Fractional a) => [a] -> [a] -> [a]
+(<//>) = S.zipWith (/)
+infixl 7 <//>
+
 -- Adding two streams (Mixing)
 (<++>) :: (Num a) => [a] -> [a] -> [a]
 (<++>) = S.zipWith (+)
 infixl 6 <++>
+
+-- Adding constant
+(<+->) :: (Num a) => [a] -> a -> [a]
+(<+->) = flip $ (flip (S.zipWith (+))) . S.repeat
+infixl 6 <+->
 
 -- Amount, input, output
 distortion :: Double -> Sample -> Sample
