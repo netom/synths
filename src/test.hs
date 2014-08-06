@@ -147,7 +147,7 @@ music =
     --lp303' (0, 0, 0, 0, 0) (oscSin (repeat 0.3) </-> 2 <+-> 0.5) (repeat 0) (repeat 0.5) (oscSawtooth (repeat 110))
     --lp303' (0, 0, 0, 0, 0) (repeat 0.5) (repeat 0) (oscSin (repeat 0.3) </-> 3 <+-> 0.5) (oscSawtooth (repeat 110))
     --oscSawtooth (repeat 440)
-    lp303' (0, 0, 0, 0, 0) (repeat 0.0007) (repeat 0.66) (oscSin (repeat 0.3) <*-> 0.4 <+-> 0.6) (bassloop2)
+    lp303' (0, 0, 0, 0, 0) (repeat 0.0007) (repeat 0.66) (oscSin (repeat 0.6) <*-> 0.4 <+-> 0.6) (bassloop2)
     --bassloop2
 
 main = do

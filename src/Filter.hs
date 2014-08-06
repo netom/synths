@@ -62,7 +62,7 @@ fir b z xs = S.map fst $ S.scanl foldFunc (0, z) xs
         foldFunc (_, z) x = (S.sum $ xz <**> b, S.init xz)
             where
                 xz = x : z
-
+-- 0 < fc < 1
 lp303' :: (Double, Double, Double, Double, Double) -> [Double] -> [Double] -> [Double] -> [Double] -> [Double]
 lp303' (z0, z1, z2, z3, z4) (hpf:hpfs) (q:qs) (fc:fcs) (x:xs) = y : lp303' (zn0, zn1, zn2, zn3, zn4) hpfs qs fcs xs
     where
@@ -76,16 +76,15 @@ lp303 (z0, z1, z2, z3, z4) hpf q fc x = (na * y4, (zn0, zn1, zn2, zn3, zn4))
         na = 1 + 0.5 * k;
 
         -- fc
-        cutoff = fc**2
-        fc' = if cutoff <= 0 then 0.02 else (if cutoff >= 1.0 then 0.999 else cutoff)
+        fc2 = fc**2
 
         -- hpf, nk: nagy k
-        nk = fc' * pi;
+        nk = fc2 * pi;
         ah = (nk - 2) / (nk + 2);
         bh = 2 / (nk + 2);
 
         -- run
-        a = 2 * tan (0.5 * pi * fc') -- dewarping, not required with 2x oversampling
+        a = 2 * tan (0.5 * pi * fc2) -- dewarping, not required with 2x oversampling
         ainv = 1 / a
         a2 = a * a
         b  = 2 * a + 1
