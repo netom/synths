@@ -59,17 +59,22 @@ sinc x = if abs x >= taylor_n_bound then sin x / x else 1 - x^2/6 + x^4/120
 fir :: [Double] -> [Double] -> [Double] -> [Double]
 fir b z xs = S.map fst $ S.scanl foldFunc (0, z) xs
     where
+        foldFunc :: (Double, [Double]) -> Double -> (Double, [Double])
         foldFunc (_, z) x = (S.sum $ xz <**> b, S.init xz)
             where
                 xz = x : z
 -- 0 < fc < 1
-lp303' :: (Double, Double, Double, Double, Double) -> [Double] -> [Double] -> [Double] -> [Double] -> [Double]
-lp303' (z0, z1, z2, z3, z4) (hpf:hpfs) (q:qs) (fc:fcs) (x:xs) = y : lp303' (zn0, zn1, zn2, zn3, zn4) hpfs qs fcs xs
-    where
-        (y, (zn0, zn1, zn2, zn3, zn4)) = lp303 (z0, z1, z2, z3, z4) hpf q fc x
+--lp303' :: (Double, Double, Double, Double, Double) -> [Double] -> [Double] -> [Double] -> [Double] -> [Double]
+--lp303' (z0, z1, z2, z3, z4) (hpf:hpfs) (q:qs) (fc:fcs) (x:xs) = y : lp303' (zn0, zn1, zn2, zn3, zn4) hpfs qs fcs xs
+--    where
+--        (y, (zn0, zn1, zn2, zn3, zn4)) = lp303 (z0, z1, z2, z3, z4) (hpf, q, fc, x)
 
-lp303 :: (Double, Double, Double, Double, Double) -> Double -> Double -> Double -> Double -> (Double, (Double, Double, Double, Double, Double))
-lp303 (z0, z1, z2, z3, z4) hpf q fc x = (na * y4, (zn0, zn1, zn2, zn3, zn4))
+lp303' :: [Double] -> [Double] -> [Double] -> [Double] -> [Double]
+lp303' hpfs qs fcs xs = S.map fst $ S.scanl lp303 (0, (0, 0, 0, 0, 0)) $ S.zip4 hpfs qs fcs xs
+
+
+lp303 :: (Double, (Double, Double, Double, Double, Double)) -> (Double, Double, Double, Double) -> (Double, (Double, Double, Double, Double, Double))
+lp303 (_, (z0, z1, z2, z3, z4)) (hpf, q, fc, x) = (na * y4, (zn0, zn1, zn2, zn3, zn4))
     where
         k = 20 * q;
         na = 1 + 0.5 * k;

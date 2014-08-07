@@ -69,9 +69,6 @@ closedhat = noiseWhite <**> eExp 1 0.999
 
 bass1 :: Time -> [Frequency] -> [Sample]
 bass1 len fs = oscSawtooth (fs <*-> 2) <*-> 0.5 <**> eADSR 0.01 0.01 0.8 0.07 len
-    where
-        ntaps = 64
-        coeffs = fDesign $ take ntaps $ [1,1,1] ++ [0,0..]
 
 --
 -- Loops
@@ -83,7 +80,25 @@ bassloop1 =  cycle ( (take 88200 $ reese (freqs G2) 2) ++
     (take 44100 $ reese (freqs A2) 2) ++
     (take 44100 $ reese (freqs F2) 3) )
 
-bassloop2 = cycle $ take 5000 $ bass1 0 (freqs A1)
+bassloop2 = cycle $ take 5000 $ bass1 0 (freqs A0)
+
+bassloop3 =  cycle (
+    (take 7000 $ bass1 0.09 (freqs D1)) ++
+    (take 7000 $ bass1 0.09 (freqs A2)) ++
+    (take 7000 $ bass1 0.09 (freqs A2)) ++
+    (take 7000 $ bass1 0.09 (freqs G2)) ++
+    (take 7000 $ bass1 0.09 (freqs G2)) ++
+    (take 7000 $ bass1 0.09 (freqs F2)) ++
+    (take 7000 $ bass1 0.09 (freqs F2)) ++
+    (take 7000 $ bass1 0.09 (freqs E2)) ++
+    (take 7000 $ bass1 0.09 (freqs E2)) ++
+    (take 7000 $ bass1 0.09 (freqs D2)) ++
+    (take 7000 $ bass1 0.09 (freqs D2)) ++
+    (take 7000 $ bass1 0.09 (freqs F2)) ++
+    (take 7000 $ bass1 0.09 (freqs F2)) ++
+    (take 7000 $ bass1 0.09 (freqs E2)) ++
+    (take 7000 $ bass1 0.09 (freqs E2)) ++
+    (take 7000 $ bass1 0.09 (freqs D2)) )
 
 padloop1 = cycle ( (take 88200 $ chord pad1 (freqs C4) tMaj) ++
     (take 88200 $ chord pad1 (freqs G3) tMaj) ++
@@ -128,6 +143,10 @@ poploop = cycle (
 -- Assembly, master
 --
 
+filterLfo = oscSin (repeat 4) <*-> 0.39 <+-> 0.61
+
+resonance = repeat 0.8
+
 music =
     --kickloop2 <*-> 0.6 <++> bassloop1 <*-> 0.4
     --bassloop1 <*-> 0.25 <++> kickloop1 <*-> 0.7 <++> padloop1 <*-> 0.05
@@ -147,7 +166,8 @@ music =
     --lp303' (0, 0, 0, 0, 0) (oscSin (repeat 0.3) </-> 2 <+-> 0.5) (repeat 0) (repeat 0.5) (oscSawtooth (repeat 110))
     --lp303' (0, 0, 0, 0, 0) (repeat 0.5) (repeat 0) (oscSin (repeat 0.3) </-> 3 <+-> 0.5) (oscSawtooth (repeat 110))
     --oscSawtooth (repeat 440)
-    lp303' (0, 0, 0, 0, 0) (repeat 0.0007) (repeat 0.66) (oscSin (repeat 0.6) <*-> 0.4 <+-> 0.6) (bassloop2)
+    --lp303' (0, 0, 0, 0, 0) (repeat 0.0007) (repeat 0.8) (oscSin (repeat 0.6) <*-> 0.4 <+-> 0.6) (bassloop2)
+    lp303' (repeat 0.007) resonance filterLfo (oscSquare (repeat 80))
     --bassloop2
 
 main = do
