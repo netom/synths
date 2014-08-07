@@ -71,11 +71,8 @@ lp303' (z0, z1, z2, z3, z4) (hpf:hpfs) (q:qs) (fc:fcs) (x:xs) = y : lp303' (zn0,
 lp303 :: (Double, Double, Double, Double, Double) -> Double -> Double -> Double -> Double -> (Double, (Double, Double, Double, Double, Double))
 lp303 (z0, z1, z2, z3, z4) hpf q fc x = (na * y4, (zn0, zn1, zn2, zn3, zn4))
     where
-        -- set q, na: nagy a
         k = 20 * q;
         na = 1 + 0.5 * k;
-
-        -- fc
         fc2 = fc**2
 
         -- hpf, nk: nagy k
@@ -95,7 +92,7 @@ lp303 (z0, z1, z2, z3, z4) hpf q fc x = (na * y4, (zn0, zn1, zn2, zn3, zn4))
 
         -- current state
         s0 = (a2 * a * z0 + a2 * b * z1 + z2 * (b2 - 2 * a2) * a + z3 * (b2 - 3 * a2) * b) * c
-        s  = bh*s0 - z4
+        s  = bh * s0 - z4
 
         -- input clipping
         clip x = x / (1 + abs x)
