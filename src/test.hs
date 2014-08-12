@@ -139,6 +139,16 @@ bassFiltered len fs = lp303' (repeat 0.0007) (repeat 0.3) (eLinear 0.8 0.3 (len 
         fullLen = len + a + d + r
 
 
+arpeggiator :: [Frequency] -> Int -> [Frequency]
+arpeggiator _ 0 = []
+arpeggiator notes octaves = notes ++ arpeggiator (map (*2) notes) (octaves - 1)
+
+musearp :: [Sample]
+musearp = concat $ map (\f -> take 5000 $ oscTriangle $ repeat f ) $ cycle $ up ++ down
+    where
+        up = arpeggiator [freq C4, freq Eb4, freq G4] 3
+        down = init $ tail $ reverse up
+
 --
 -- Assembly, master
 --
@@ -169,7 +179,8 @@ music =
     --lp303' (0, 0, 0, 0, 0) (repeat 0.0007) (repeat 0.8) (oscSin (repeat 0.6) <*-> 0.4 <+-> 0.6) (bassloop2)
     --lp303' (repeat 0.007) resonance filterLfo (oscSquare (repeat 80))
     --bassFiltered 0.2 (repeat 60)
-    bassloop3
+    --bassloop3
+    musearp
 
 main = do
     --pulseaudioOutput $ take (44100 * 30) music
