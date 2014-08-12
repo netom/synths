@@ -83,22 +83,11 @@ bassloop1 =  cycle ( (take 88200 $ reese (freqs G2) 2) ++
 bassloop2 = cycle $ take 5000 $ bass1 0 (freqs A0)
 
 bassloop3 =  cycle (
-    (take 7000 $ bass1 0.09 (freqs D1)) ++
-    (take 7000 $ bass1 0.09 (freqs A2)) ++
-    (take 7000 $ bass1 0.09 (freqs A2)) ++
-    (take 7000 $ bass1 0.09 (freqs G2)) ++
-    (take 7000 $ bass1 0.09 (freqs G2)) ++
-    (take 7000 $ bass1 0.09 (freqs F2)) ++
-    (take 7000 $ bass1 0.09 (freqs F2)) ++
-    (take 7000 $ bass1 0.09 (freqs E2)) ++
-    (take 7000 $ bass1 0.09 (freqs E2)) ++
-    (take 7000 $ bass1 0.09 (freqs D2)) ++
-    (take 7000 $ bass1 0.09 (freqs D2)) ++
-    (take 7000 $ bass1 0.09 (freqs F2)) ++
-    (take 7000 $ bass1 0.09 (freqs F2)) ++
-    (take 7000 $ bass1 0.09 (freqs E2)) ++
-    (take 7000 $ bass1 0.09 (freqs E2)) ++
-    (take 7000 $ bass1 0.09 (freqs D2)) )
+    (take 10000 $ bassFiltered 0.09 (freqs D1)) ++
+    (take 10000 $ bassFiltered 0.09 (freqs B2)) ++
+    (take 10000 $ bassFiltered 0.09 (freqs D1)) ++
+    (take 10000 $ bassFiltered 0.09 (freqs D1)) ++
+    (take 10000 $ bassFiltered 0.09 (freqs D2)) )
 
 padloop1 = cycle ( (take 88200 $ chord pad1 (freqs C4) tMaj) ++
     (take 88200 $ chord pad1 (freqs G3) tMaj) ++
@@ -139,6 +128,17 @@ poploop = cycle (
     (take 5000 $ pop (freq D5)) ++
     (take 5000 $ pop (freq E5)) )
 
+-- Bassline with shaped filter
+bassFiltered :: Time -> [Frequency] -> [Sample]
+bassFiltered len fs = lp303' (repeat 0.0007) (repeat 0.3) (eLinear 0.8 0.3 (len / 2)) $ oscSawtooth fs <**> eADSR a d s r len
+    where
+        a = 0.02
+        d = 0.02
+        s = 0.7
+        r = 0.2
+        fullLen = len + a + d + r
+
+
 --
 -- Assembly, master
 --
@@ -167,8 +167,9 @@ music =
     --lp303' (0, 0, 0, 0, 0) (repeat 0.5) (repeat 0) (oscSin (repeat 0.3) </-> 3 <+-> 0.5) (oscSawtooth (repeat 110))
     --oscSawtooth (repeat 440)
     --lp303' (0, 0, 0, 0, 0) (repeat 0.0007) (repeat 0.8) (oscSin (repeat 0.6) <*-> 0.4 <+-> 0.6) (bassloop2)
-    lp303' (repeat 0.007) resonance filterLfo (oscSquare (repeat 80))
-    --bassloop2
+    --lp303' (repeat 0.007) resonance filterLfo (oscSquare (repeat 80))
+    --bassFiltered 0.2 (repeat 60)
+    bassloop3
 
 main = do
     --pulseaudioOutput $ take (44100 * 30) music

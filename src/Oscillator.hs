@@ -86,7 +86,7 @@ eLinearPiece s e l = [s + i*(e-s)/samples | i <- [1,2..samples]]
 -- Linear envelope
 -- Parameters: start, end, length
 eLinear :: Double -> Double -> Time -> [Double]
-eLinear s e l = eLinearPiece s e l ++ S.repeat e
+eLinear s e l = eLinearPiece s e l S.++ S.repeat e
 
 -- ADSR envelope
 eADSR :: Double -> Double -> Double -> Double -> Double -> [Sample]
