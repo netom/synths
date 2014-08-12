@@ -143,10 +143,10 @@ arpeggiator :: [Frequency] -> Int -> [Frequency]
 arpeggiator _ 0 = []
 arpeggiator notes octaves = notes ++ arpeggiator (map (*2) notes) (octaves - 1)
 
-musearp :: [Sample]
-musearp = concat $ map (\f -> take 5000 $ oscTriangle $ repeat f ) $ cycle $ up ++ down
+musearp :: [Frequency] -> [Sample]
+musearp notes = concat $ map (\f -> take 5000 $ oscTriangle $ repeat f ) $ up ++ down
     where
-        up = arpeggiator [freq C4, freq Eb4, freq G4] 3
+        up = arpeggiator notes 3
         down = init $ tail $ reverse up
 
 --
@@ -180,7 +180,15 @@ music =
     --lp303' (repeat 0.007) resonance filterLfo (oscSquare (repeat 80))
     --bassFiltered 0.2 (repeat 60)
     --bassloop3
-    musearp
+    cycle (
+    (musearp $ doChord C4 tMin) ++
+    (musearp $ doChord Bb4 tMaj) ++
+    (musearp $ doChord F4 tMin) ++
+    (musearp $ doChord C4 tMin) ++
+    (musearp $ doChord Bb4 tMaj) ++
+    (musearp $ doChord F4 tMin) ++
+    (musearp $ doChord C4 tMin) ++
+    (musearp $ doChord C4 tMin) )
 
 main = do
     --pulseaudioOutput $ take (44100 * 30) music

@@ -22,3 +22,6 @@ sAugMaj = [0, 4, 8, 11] :: [Double]
 
 chord :: Instrument -> [Frequency] -> Chord -> [Sample]
 chord i fs c = mixN $ map i $ map (\x -> map (*2**(x/12)) fs) c
+
+doChord :: Note -> [Double] -> [Frequency]
+doChord note displacement = map (\x -> (freq note)*2**(x/12)) displacement
