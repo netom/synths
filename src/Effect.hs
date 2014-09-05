@@ -55,23 +55,23 @@ mixN ss = S.foldr foldFunc [] (S.transpose ss)
         foldFunc x xs = (S.sum x / fromIntegral (S.length x)) : xs
 
 -- Echo
-echo :: Int -> [Sample] -> [Sample]
-echo n xs = S.map snd $ S.scanl foldfunc (Sq.replicate n 0, 0) xs
+echo :: Double -> Int -> [Sample] -> [Sample]
+echo q n xs = S.map snd $ S.scanl foldfunc (Sq.replicate n 0, 0) xs
     where
         foldfunc :: (Sq.Seq Sample, Sample) -> Sample -> (Sq.Seq Sample, Sample)
         foldfunc (cbuf, _) x = (cbuftail Sq.|> out, out)
             where
                 cbuftail = Sq.drop 1 cbuf
                 s = Sq.index cbuf 0
-                out = x * 0.1 + s * 0.99
+                out = x * 0.1 + s * q
 
-reverb xs =
-    xs <*-> 0.2 <++>
-    echo 941 xs <*-> 0.1 <++>
-    echo 1223 xs <*-> 0.1 <++>
-    echo 1423 xs <*-> 0.1 <++>
-    echo 2111 xs <*-> 0.1 <++>
-    echo 2903 xs <*-> 0.1 <++>
-    echo 3571 xs <*-> 0.1 <++>
-    echo 4229 xs <*-> 0.1
+reverb wet xs =
+    xs <*-> wet <++>
+    echo 0.99 941 xs <*-> 0.1 <++>
+    echo 0.99 1223 xs <*-> 0.1 <++>
+    echo 0.99 1423 xs <*-> 0.1 <++>
+    echo 0.99 2111 xs <*-> 0.1 <++>
+    echo 0.99 2903 xs <*-> 0.1 <++>
+    echo 0.99 3571 xs <*-> 0.1 <++>
+    echo 0.99 4229 xs <*-> 0.1
 

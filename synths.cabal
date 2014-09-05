@@ -10,11 +10,11 @@ Executable test
   build-depends: base
                , containers
                , WAVE
-               , pulse-simple
                , stream-fusion
+               , bytestring
 
   hs-source-dirs: src
   main-is: test.hs
-  ghc-options: -O2 -prof -rtsopts -fprof-auto -auto-all -caf-all
-  --ghc-options: -O3
+  --ghc-options: -O2 -prof -rtsopts -fprof-auto -auto-all -caf-all
+  ghc-options: -O3
 

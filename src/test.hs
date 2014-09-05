@@ -157,6 +157,20 @@ filterLfo = oscSin (repeat 4) <*-> 0.39 <+-> 0.61
 
 resonance = repeat 0.8
 
+q = 13500
+h = 2*q
+wh = 2*h
+
+mainIns note len = take len $ eADSR 0.01 0.01 0.2 0.01 0.2 <**> oscSawtooth (repeat $ freq note)
+
+mainTheme = cycle (
+        mainIns A3 q ++
+        mainIns A4 q ++
+        mainIns E4 h ++
+        mainIns G4 h ++
+        mainIns D4 h
+    )
+
 music =
     --kickloop2 <*-> 0.6 <++> bassloop1 <*-> 0.4
     --bassloop1 <*-> 0.25 <++> kickloop1 <*-> 0.7 <++> padloop1 <*-> 0.05
@@ -180,15 +194,19 @@ music =
     --lp303' (repeat 0.007) resonance filterLfo (oscSquare (repeat 80))
     --bassFiltered 0.2 (repeat 60)
     --bassloop3
-    cycle (
-    (musearp $ doChord C4 tMin) ++
-    (musearp $ doChord Bb4 tMaj) ++
-    (musearp $ doChord F4 tMin) ++
-    (musearp $ doChord C4 tMin) ++
-    (musearp $ doChord Bb4 tMaj) ++
-    (musearp $ doChord F4 tMin) ++
-    (musearp $ doChord C4 tMin) ++
-    (musearp $ doChord C4 tMin) )
+    --cycle (
+    --(musearp $ doChord C4 tMin) ++
+    --(musearp $ doChord Bb4 tMaj) ++
+    --(musearp $ doChord F4 tMin) ++
+    --(musearp $ doChord C4 tMin) ++
+    --(musearp $ doChord Bb4 tMaj) ++
+    --(musearp $ doChord F4 tMin) ++
+    --(musearp $ doChord C4 tMin) ++
+    --(musearp $ doChord C4 tMin) )
+
+    -- Walking
+    reverb 0.8 $ echo 0.6 q mainTheme
+
 
 main = do
     --pulseaudioOutput $ take (44100 * 30) music
