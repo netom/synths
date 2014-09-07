@@ -35,10 +35,26 @@ infixl 7 <//>
 (<++>) = S.zipWith (+)
 infixl 6 <++>
 
+-- Subtracting two streams
+(<-->) :: (Num a) => [a] -> [a] -> [a]
+(<-->) = S.zipWith (-)
+infixl 6 <-->
+
 -- Adding constant
 (<+->) :: (Num a) => [a] -> a -> [a]
 (<+->) = flip $ (flip (S.zipWith (+))) . S.repeat
 infixl 6 <+->
+
+-- Raising to a power
+(<***>) :: (Floating a) => [a] -> [a] -> [a]
+(<***>) = S.zipWith (**)
+infixl 8 <***>
+
+-- Raising to a constant power
+(<**->) :: (Floating a) => [a] -> a -> [a]
+--(<**->) = flip $ (flip $ S.zipWith (**)) . S.repeat
+(<**->) a b = S.zipWith (**) a (S.repeat b)
+infixl 8 <**->
 
 -- Amount, input, output
 distortion :: Double -> Sample -> Sample
@@ -73,5 +89,7 @@ reverb wet xs =
     echo 0.99 2111 xs <*-> 0.1 <++>
     echo 0.99 2903 xs <*-> 0.1 <++>
     echo 0.99 3571 xs <*-> 0.1 <++>
-    echo 0.99 4229 xs <*-> 0.1
+    echo 0.99 4229 xs <*-> 0.1 <++>
+    echo 0.99 5773 xs <*-> 0.1 <++>
+    echo 0.99 7489 xs <*-> 0.1
 

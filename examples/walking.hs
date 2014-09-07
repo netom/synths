@@ -74,20 +74,12 @@ bass1 len fs = oscSawtooth (fs <*-> 2) <*-> 0.5 <**> eADSR 0.01 0.01 0.8 0.07 le
 -- Loops
 --
 
--- bassloop1 = cycle $ take 5975 $ bass1 0 (freqs C1)
 -- Bass loop
 bassloop1 =  cycle ( (take 88200 $ reese (freqs G2) 2) ++
     (take 44100 $ reese (freqs A2) 2) ++
     (take 44100 $ reese (freqs F2) 3) )
 
 bassloop2 = cycle $ take 5000 $ bass1 0 (freqs A0)
-
-bassloop3 =  cycle (
-    (take 10000 $ bassFiltered 0.09 (freqs D1)) ++
-    (take 10000 $ bassFiltered 0.09 (freqs B2)) ++
-    (take 10000 $ bassFiltered 0.09 (freqs D1)) ++
-    (take 10000 $ bassFiltered 0.09 (freqs D1)) ++
-    (take 10000 $ bassFiltered 0.09 (freqs D2)) )
 
 padloop1 = cycle ( (take 88200 $ chord pad1 (freqs C4) tMaj) ++
     (take 88200 $ chord pad1 (freqs G3) tMaj) ++
@@ -107,44 +99,12 @@ kickloop3 = cycle $ take 19600 $ kick3
 
 kickloop4 = cycle $ take 20000 $ kick4
 
--- TODO: try difference lists?
-poploop = cycle (
-    (concat $ replicate 3 $
-    (take 10000 $ pop (freq A4)) ++
-    (take 20000 $ pop (freq C5)) ++
-    (take 10000 $ pop (freq A4)) ++
-    (take 10000 $ pop (freq B4)) ++
-    (take 5000 $ pop (freq A4)) ++
-    (take 15000 $ pop (freq B4)) ++
-    (take 10000 $ pop (freq G4)) )++
-    --
-    (take 10000 $ pop (freq A4)) ++
-    (take 20000 $ pop (freq C5)) ++
-    (take 10000 $ pop (freq A4)) ++
-    (take 10000 $ pop (freq B4)) ++
-    (take 5000 $ pop (freq A4)) ++
-    (take 10000 $ pop (freq B4)) ++
-    (take 5000 $ pop (freq C5)) ++
-    (take 5000 $ pop (freq D5)) ++
-    (take 5000 $ pop (freq E5)) )
-
--- Bassline with shaped filter
-bassFiltered :: Time -> [Frequency] -> [Sample]
-bassFiltered len fs = lp303' (repeat 0.0007) (repeat 0.3) (eLinear 0.8 0.3 (len / 2)) $ oscSawtooth fs <**> eADSR a d s r len
-    where
-        a = 0.02
-        d = 0.02
-        s = 0.7
-        r = 0.2
-        fullLen = len + a + d + r
-
-
 arpeggiator :: [Frequency] -> Int -> [Frequency]
 arpeggiator _ 0 = []
 arpeggiator notes octaves = notes ++ arpeggiator (map (*2) notes) (octaves - 1)
 
 musearp :: [Frequency] -> [Sample]
-musearp notes = concat $ map (\f -> take 5000 $ oscTriangle $ repeat f ) $ up ++ down
+musearp notes = concat $ map (\f -> take 5150 $ eADSR 0.01 0.01 0.5 0.03 0.1 <**> oscSin (repeat f) ) $ up ++ down
     where
         up = arpeggiator notes 3
         down = init $ tail $ reverse up
@@ -153,17 +113,20 @@ musearp notes = concat $ map (\f -> take 5000 $ oscTriangle $ repeat f ) $ up ++
 -- Assembly, master
 --
 
-filterLfo = oscSin (repeat 4) <*-> 0.39 <+-> 0.61
+filterLfo = (oscSin (repeat 0.1)) <*-> 0.2 <+-> 0.3 <++> (oscSin (repeat 3)) <*-> 0.099
 
-resonance = repeat 0.8
+resonance = repeat 11.5
 
-q = 13500
-h = 2*q
-wh = 2*h
+tw  = 2700
+q   = 5 * tw
+h   = 2 * q
+wh  = 2 * h
+ft  = 4 * tw
+ft2 = 2* ft
 
-mainIns note len = take len $ eADSR 0.01 0.01 0.2 0.01 0.2 <**> oscSawtooth (repeat $ freq note)
+mainIns note len = take len $ eADSR 0.01 0.01 0.9 0.01 0.1 <**> oscSawtooth (repeat $ freq note)
 
-mainTheme = cycle (
+mainTheme = resofour resonance filterLfo $ cycle (
         mainIns A3 q ++
         mainIns A4 q ++
         mainIns E4 h ++
@@ -172,46 +135,29 @@ mainTheme = cycle (
     )
 
 music =
-    --kickloop2 <*-> 0.6 <++> bassloop1 <*-> 0.4
-    --bassloop1 <*-> 0.25 <++> kickloop1 <*-> 0.7 <++> padloop1 <*-> 0.05
-    --fir coeffs [0|i<-[1..ntaps - 1]] padloop2
-    -- padloop2
-    --kickloop2 <*-> 0.6 <++> bassloop2 <*-> 0.4
-    --where
-    --    ntaps = 64
-    --    coeffs = fDesign $ take ntaps $ [1,1] ++ [0,0..]
-    --kickloop4
-    --pop 120
-    --(take 160000 kickloop4) <*-> 0.5 ++ (poploop <*-> 0.5 <++> kickloop4 <*-> 0.5)
-    --reverb poploop
-    --poploop
-    -- lp303' : z hpf q fc x
-    --lp303' (0, 0, 0, 0, 0) (repeat 0) (oscSin (repeat 0.3) </-> 3 <+-> 0.5) (oscSin (repeat 0.2) </-> 3 <+-> 0.5) (oscSawtooth (repeat 110))
-    --lp303' (0, 0, 0, 0, 0) (oscSin (repeat 0.3) </-> 2 <+-> 0.5) (repeat 0) (repeat 0.5) (oscSawtooth (repeat 110))
-    --lp303' (0, 0, 0, 0, 0) (repeat 0.5) (repeat 0) (oscSin (repeat 0.3) </-> 3 <+-> 0.5) (oscSawtooth (repeat 110))
-    --oscSawtooth (repeat 440)
-    --lp303' (0, 0, 0, 0, 0) (repeat 0.0007) (repeat 0.8) (oscSin (repeat 0.6) <*-> 0.4 <+-> 0.6) (bassloop2)
-    --lp303' (repeat 0.007) resonance filterLfo (oscSquare (repeat 80))
-    --bassFiltered 0.2 (repeat 60)
-    --bassloop3
-    --cycle (
+    --reverb 0.6 $ resofour (repeat 0.25) (repeat 0.2) $ cycle (
     --(musearp $ doChord C4 tMin) ++
-    --(musearp $ doChord Bb4 tMaj) ++
+    --(musearp $ doChord Bb3 tMaj) ++
     --(musearp $ doChord F4 tMin) ++
     --(musearp $ doChord C4 tMin) ++
-    --(musearp $ doChord Bb4 tMaj) ++
+    --(musearp $ doChord Bb3 tMaj) ++
     --(musearp $ doChord F4 tMin) ++
     --(musearp $ doChord C4 tMin) ++
     --(musearp $ doChord C4 tMin) )
 
     -- Walking
-    reverb 0.8 $ echo 0.6 q mainTheme
-
+    (reverb 0.5 $ echo 0.2 ft2 $ mainTheme) <*-> 5
 
 main = do
-    --pulseaudioOutput $ take (44100 * 30) music
     pcmOutput music
-    --pulseaudioOutput $ replicate (44100 * 30) 0
-    --waveOutput "test.wav" (44100 * 30) $ music
-    --waveOutput "test.wav" (44100 * 30) $ repeat 0
-    --pcmOutput [-1]
+    --pcmOutput $ fourpole (repeat (-0.2)) (repeat 0.8) noiseWhite
+    --pcmOutput $ onepole (repeat (-0.9)) (repeat 0.1) noiseWhite
+    --pcmOutput $ resofour (repeat 0.8) (repeat 0.4) noiseWhite
+    --print a1s
+    --print b0s
+    where
+        cfnorms = [0.11]
+        resonances = [0]
+        a1s = cfnorms <--> repeat 1
+        b0s = a1s <+-> 1
+        ks = resonances <*-> 1.5

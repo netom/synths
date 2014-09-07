@@ -66,6 +66,8 @@ lfoSawtooth' fs = oscillator (\x -> 1 - x / 2 / pi) 0 fs
 lfoSawtooth :: [Frequency] -> [Sample]
 lfoSawtooth fs = oscillator (\x -> x / 2 / pi) 0 fs
 
+lfoSine = (<+-> 1) . oscSin
+
 --
 -- Envelopes
 --

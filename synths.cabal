@@ -6,15 +6,26 @@ author:         Fábián Tamás László <giganetom@gmail.com>
 synopsis:       A sound and music synthesizer framework
 build-type:     Simple
 
-Executable test
+Executable walking
   build-depends: base
                , containers
                , WAVE
                , stream-fusion
                , bytestring
 
-  hs-source-dirs: src
-  main-is: test.hs
+  hs-source-dirs: src, examples
+  main-is: walking.hs
   --ghc-options: -O2 -prof -rtsopts -fprof-auto -auto-all -caf-all
   ghc-options: -O3
 
+Executable muse-bliss
+  build-depends: base
+               , containers
+               , WAVE
+               , stream-fusion
+               , bytestring
+
+  hs-source-dirs: src, examples
+  main-is: muse-bliss.hs
+  --ghc-options: -O2 -prof -rtsopts -fprof-auto -auto-all -caf-all
+  ghc-options: -O3
