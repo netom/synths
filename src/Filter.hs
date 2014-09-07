@@ -35,4 +35,4 @@ resofour resonances cfnorms = feedback ks $ fourpole a1s b0s
         a1s = ts <//> (ss <--> cs <**> ts)
         b0s = a1s <+-> 1
         g2s = b0s <**-> 2 <//> (a1s <**-> 2 <++> a1s <**> cs <*-> 2 <+-> 1)
-        ks = resonances <**> g2s <**-> 2
+        ks = resonances <//> g2s <**-> 2

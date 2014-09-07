@@ -99,23 +99,13 @@ kickloop3 = cycle $ take 19600 $ kick3
 
 kickloop4 = cycle $ take 20000 $ kick4
 
-arpeggiator :: [Frequency] -> Int -> [Frequency]
-arpeggiator _ 0 = []
-arpeggiator notes octaves = notes ++ arpeggiator (map (*2) notes) (octaves - 1)
-
-musearp :: [Frequency] -> [Sample]
-musearp notes = concat $ map (\f -> take 5150 $ eADSR 0.01 0.01 0.5 0.03 0.1 <**> oscSin (repeat f) ) $ up ++ down
-    where
-        up = arpeggiator notes 3
-        down = init $ tail $ reverse up
-
 --
 -- Assembly, master
 --
 
 filterLfo = (oscSin (repeat 0.1)) <*-> 0.2 <+-> 0.3 <++> (oscSin (repeat 3)) <*-> 0.099
 
-resonance = repeat 11.5
+resonance = repeat 0.0001
 
 tw  = 2700
 q   = 5 * tw
@@ -135,29 +125,7 @@ mainTheme = resofour resonance filterLfo $ cycle (
     )
 
 music =
-    --reverb 0.6 $ resofour (repeat 0.25) (repeat 0.2) $ cycle (
-    --(musearp $ doChord C4 tMin) ++
-    --(musearp $ doChord Bb3 tMaj) ++
-    --(musearp $ doChord F4 tMin) ++
-    --(musearp $ doChord C4 tMin) ++
-    --(musearp $ doChord Bb3 tMaj) ++
-    --(musearp $ doChord F4 tMin) ++
-    --(musearp $ doChord C4 tMin) ++
-    --(musearp $ doChord C4 tMin) )
-
-    -- Walking
-    (reverb 0.5 $ echo 0.2 ft2 $ mainTheme) <*-> 5
+    (reverb 0.5 $ echo 0.2 ft2 $ mainTheme) <*-> 1
 
 main = do
     pcmOutput music
-    --pcmOutput $ fourpole (repeat (-0.2)) (repeat 0.8) noiseWhite
-    --pcmOutput $ onepole (repeat (-0.9)) (repeat 0.1) noiseWhite
-    --pcmOutput $ resofour (repeat 0.8) (repeat 0.4) noiseWhite
-    --print a1s
-    --print b0s
-    where
-        cfnorms = [0.11]
-        resonances = [0]
-        a1s = cfnorms <--> repeat 1
-        b0s = a1s <+-> 1
-        ks = resonances <*-> 1.5
