@@ -23,14 +23,7 @@ long_line_behaviour=1
 long_line_column=72
 
 [files]
-current_page=4
-FILE_NAME_0=7805;Haskell;0;EUTF-8;0;1;0;%2Fhome%2Fnetom%2FAsztal%2Fpicnic.hs;0;4
-FILE_NAME_1=1796;Haskell;0;EUTF-8;0;1;0;%2Fhome%2Fcuccok%2Fprogramozas%2Fsynths%2Fsrc%2FEffect.hs;0;4
-FILE_NAME_2=2485;Haskell;0;EUTF-8;0;1;0;%2Fhome%2Fcuccok%2Fprogramozas%2Fsynths%2Fsrc%2FOscillator.hs;0;4
-FILE_NAME_3=186;Haskell;0;EUTF-8;0;1;0;%2Fhome%2Fcuccok%2Fprogramozas%2Fsynths%2Fsrc%2FFilter.hs;0;4
-FILE_NAME_4=0;Haskell;0;EUTF-8;0;1;0;%2Fhome%2Fcuccok%2Fprogramozas%2Fsynths%2Fexamples%2Fwalking.hs;0;4
-FILE_NAME_5=595;Haskell;0;EUTF-8;0;1;0;%2Fhome%2Fcuccok%2Fprogramozas%2Fsynths%2Fexamples%2Fmuse-bliss.hs;0;4
-FILE_NAME_6=709;None;0;EUTF-8;0;1;0;%2Fhome%2Fcuccok%2Fprogramozas%2Fsynths%2Fsynths.cabal;0;4
+current_page=0
 
 [VTE]
 last_dir=/home/netom
