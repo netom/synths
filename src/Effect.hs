@@ -81,15 +81,15 @@ echo q n xs = S.map snd $ S.scanl foldfunc (Sq.replicate n 0, 0) xs
                 s = Sq.index cbuf 0
                 out = x * 0.1 + s * q
 
-reverb wet xs =
-    xs <*-> wet <++>
-    echo 0.99 941 xs <*-> 0.1 <++>
-    echo 0.99 1223 xs <*-> 0.1 <++>
-    echo 0.99 1423 xs <*-> 0.1 <++>
-    echo 0.99 2111 xs <*-> 0.1 <++>
-    echo 0.99 2903 xs <*-> 0.1 <++>
-    echo 0.99 3571 xs <*-> 0.1 <++>
-    echo 0.99 4229 xs <*-> 0.1 <++>
-    echo 0.99 5773 xs <*-> 0.1 <++>
-    echo 0.99 7489 xs <*-> 0.1
+reverb wet decay xs =
+    xs <*-> (1 - wet) <++>
+    (echo decay 941 xs <*-> 0.1 <++>
+    echo decay 1223 xs <*-> 0.1 <++>
+    echo decay 1423 xs <*-> 0.1 <++>
+    echo decay 2111 xs <*-> 0.1 <++>
+    echo decay 2903 xs <*-> 0.1 <++>
+    echo decay 3571 xs <*-> 0.1 <++>
+    echo decay 4229 xs <*-> 0.1 <++>
+    echo decay 5773 xs <*-> 0.1 <++>
+    echo decay 7489 xs <*-> 0.1) <*-> wet
 

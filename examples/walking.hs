@@ -105,7 +105,7 @@ kickloop4 = cycle $ take 20000 $ kick4
 
 filterLfo = (oscSin (repeat 0.1)) <*-> 0.2 <+-> 0.3 <++> (oscSin (repeat 3)) <*-> 0.099
 
-resonance = repeat 0.0001
+resonance = repeat 0.1
 
 tw  = 2700
 q   = 5 * tw
@@ -125,7 +125,7 @@ mainTheme = resofour resonance filterLfo $ cycle (
     )
 
 music =
-    (reverb 0.5 $ echo 0.2 ft2 $ mainTheme) <*-> 1
+    (reverb 0.7 0.95 $ echo 0.2 ft2 $ mainTheme) <*-> 4
 
 main = do
     pcmOutput music

@@ -11,3 +11,6 @@ dist
 *.ps
 *.mp3
 *.geany
+.cabal-sandbox
+cabal.sandbox.config
+
