@@ -3,14 +3,9 @@
 *.bin
 *.wav
 *.mp3
-cabal-dev
-dist
 *.aux
 *.hp
 *.prof
 *.ps
 *.mp3
-*.geany
-.cabal-sandbox
-cabal.sandbox.config
-
+.stack-work

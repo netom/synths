@@ -18,7 +18,7 @@ musearp notes = concat $ map (\f -> take 5150 $ eADSR 0.005 0.02 0.4 0.03 0.1 <*
         down = init $ tail $ reverse up
 
 music =
-    reverb 0.9 0.90 $ resofour (repeat 0) (repeat 0.15) $ cycle (
+    reverb 0.9 0.95 $ resofour (repeat 0) (repeat 0.15) $ cycle (
     (musearp $ doChord C4 tMin) ++
     (musearp $ doChord Bb3 tMaj) ++
     (musearp $ doChord F4 tMin) ++
