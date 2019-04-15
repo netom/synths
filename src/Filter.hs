@@ -6,7 +6,6 @@ import Effect
 import Data.Fixed
 import Data.Complex
 import Data.List
-import qualified Data.List.Stream as S
 
 z :: [Double] -> [Double]
 z = (0 :)
@@ -17,8 +16,8 @@ feedback coeff func xs = output
         output = func $ xs <--> (0 : output <**> coeff)
 
 onepole :: [Double] -> [Double] -> [Double] -> [Double]
-onepole a1s b0s xs = S.scanl (\y (a1, b0, x) -> b0 * x - a1 * y) 0 $ S.zip3 a1s b0s xs
--- onepole a1s b0s xs = S.scanl (\y (a1, b0, x) -> b0 * ()) 0 $ S.zip3 a1s b0s xs
+onepole a1s b0s xs = scanl (\y (a1, b0, x) -> b0 * x - a1 * y) 0 $ zip3 a1s b0s xs
+-- onepole a1s b0s xs = scanl (\y (a1, b0, x) -> b0 * ()) 0 $ zip3 a1s b0s xs
 
 fourpole :: [Double] -> [Double] -> [Double] -> [Double]
 fourpole a1s b0s = onepole a1s b0s . onepole a1s b0s . onepole a1s b0s . onepole a1s b0s

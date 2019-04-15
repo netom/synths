@@ -9,9 +9,8 @@ build-type:     Simple
 Executable walking
   build-depends: base
                , containers
-               , WAVE
                , bytestring
-               , stream-fusion
+               , WAVE
 
   hs-source-dirs: src, examples
   main-is: walking.hs
@@ -26,11 +25,11 @@ Executable walking
                , Types
 
 Executable muse-bliss
-    build-depends: base
-                 , containers
-                 , WAVE
-                 , bytestring
-                 , stream-fusion
+  build-depends: base
+               , containers
+               , bytestring
+               , WAVE
+
   hs-source-dirs: src, examples
   main-is: muse-bliss.hs
   -- ghc-options: -O2 -prof -rtsopts -fprof-auto -auto-all -caf-all
@@ -46,9 +45,9 @@ Executable muse-bliss
 Executable muse-bliss-2
   build-depends: base
                , containers
-               , WAVE
                , bytestring
-               , stream-fusion
+               , WAVE
+
   hs-source-dirs: src, examples
   main-is: muse-bliss-2.hs
   -- ghc-options: -O2 -prof -rtsopts -fprof-auto -auto-all -caf-all
@@ -64,9 +63,9 @@ Executable muse-bliss-2
 Executable rythm
   build-depends: base
                , containers
-               , WAVE
                , bytestring
-               , stream-fusion
+               , WAVE
+
   hs-source-dirs: src, examples
   main-is: rythm.hs
   -- ghc-options: -O2 -prof -rtsopts -fprof-auto -auto-all -caf-all

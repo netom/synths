@@ -3,7 +3,7 @@ module Effect where
 import Time
 import Types
 import Data.Fixed
-import qualified Data.List.Stream as S
+import Data.List
 import qualified Data.Sequence as Sq
 
 --
@@ -12,48 +12,48 @@ import qualified Data.Sequence as Sq
 
 -- Scaling with constant
 (<*->) :: (Fractional a) => [a] -> a -> [a]
-(<*->) = flip $ (flip (S.zipWith (*))) . S.repeat
+(<*->) = flip $ (flip (zipWith (*))) . repeat
 infixl 7 <*->
 
 -- Multiplying two streams (AM)
 (<**>) :: (Num a) => [a] -> [a] -> [a]
-(<**>) = S.zipWith (*)
+(<**>) = zipWith (*)
 infixl 7 <**>
 
 -- Scaling with constant (division)
 (</->) :: (Fractional a) => [a] -> a -> [a]
-(</->) = flip $ (flip (S.zipWith (/))) . S.repeat
+(</->) = flip $ (flip (zipWith (/))) . repeat
 infixl 7 </->
 
 -- Dividing two streams (AM)
 (<//>) :: (Fractional a) => [a] -> [a] -> [a]
-(<//>) = S.zipWith (/)
+(<//>) = zipWith (/)
 infixl 7 <//>
 
 -- Adding two streams (Mixing)
 (<++>) :: (Num a) => [a] -> [a] -> [a]
-(<++>) = S.zipWith (+)
+(<++>) = zipWith (+)
 infixl 6 <++>
 
 -- Subtracting two streams
 (<-->) :: (Num a) => [a] -> [a] -> [a]
-(<-->) = S.zipWith (-)
+(<-->) = zipWith (-)
 infixl 6 <-->
 
 -- Adding constant
 (<+->) :: (Num a) => [a] -> a -> [a]
-(<+->) = flip $ (flip (S.zipWith (+))) . S.repeat
+(<+->) = flip $ (flip (zipWith (+))) . repeat
 infixl 6 <+->
 
 -- Raising to a power
 (<***>) :: (Floating a) => [a] -> [a] -> [a]
-(<***>) = S.zipWith (**)
+(<***>) = zipWith (**)
 infixl 8 <***>
 
 -- Raising to a constant power
 (<**->) :: (Floating a) => [a] -> a -> [a]
---(<**->) = flip $ (flip $ S.zipWith (**)) . S.repeat
-(<**->) a b = S.zipWith (**) a (S.repeat b)
+--(<**->) = flip $ (flip $ zipWith (**)) . repeat
+(<**->) a b = zipWith (**) a (repeat b)
 infixl 8 <**->
 
 -- Amount, input, output
@@ -66,13 +66,13 @@ quantize n i = fromIntegral (round (i * n)) / n
 
 -- Mix N sample streams to one
 mixN :: [[Sample]] -> [Sample]
-mixN ss = S.foldr foldFunc [] (S.transpose ss)
+mixN ss = foldr foldFunc [] (transpose ss)
     where
-        foldFunc x xs = (S.sum x / fromIntegral (S.length x)) : xs
+        foldFunc x xs = (sum x / fromIntegral (length x)) : xs
 
 -- Echo
 echo :: Double -> Int -> [Sample] -> [Sample]
-echo q n xs = S.map snd $ S.scanl foldfunc (Sq.replicate n 0, 0) xs
+echo q n xs = map snd $ scanl foldfunc (Sq.replicate n 0, 0) xs
     where
         foldfunc :: (Sq.Seq Sample, Sample) -> Sample -> (Sq.Seq Sample, Sample)
         foldfunc (cbuf, _) x = (cbuftail Sq.|> out, out)
