@@ -11,47 +11,47 @@ import qualified Data.Sequence as Sq
 --
 
 -- Scaling with constant
-(<*->) :: (Fractional a) => [a] -> a -> [a]
+(<*->) :: [Double] -> Double -> [Double]
 (<*->) = flip $ (flip (zipWith (*))) . repeat
 infixl 7 <*->
 
 -- Multiplying two streams (AM)
-(<**>) :: (Num a) => [a] -> [a] -> [a]
+(<**>) :: [Double] -> [Double] -> [Double]
 (<**>) = zipWith (*)
 infixl 7 <**>
 
 -- Scaling with constant (division)
-(</->) :: (Fractional a) => [a] -> a -> [a]
+(</->) :: [Double] -> Double -> [Double]
 (</->) = flip $ (flip (zipWith (/))) . repeat
 infixl 7 </->
 
 -- Dividing two streams (AM)
-(<//>) :: (Fractional a) => [a] -> [a] -> [a]
+(<//>) :: [Double] -> [Double] -> [Double]
 (<//>) = zipWith (/)
 infixl 7 <//>
 
 -- Adding two streams (Mixing)
-(<++>) :: (Num a) => [a] -> [a] -> [a]
+(<++>) :: [Double] -> [Double] -> [Double]
 (<++>) = zipWith (+)
 infixl 6 <++>
 
 -- Subtracting two streams
-(<-->) :: (Num a) => [a] -> [a] -> [a]
+(<-->) :: [Double] -> [Double] -> [Double]
 (<-->) = zipWith (-)
 infixl 6 <-->
 
 -- Adding constant
-(<+->) :: (Num a) => [a] -> a -> [a]
+(<+->) :: [Double] -> Double -> [Double]
 (<+->) = flip $ (flip (zipWith (+))) . repeat
 infixl 6 <+->
 
 -- Raising to a power
-(<***>) :: (Floating a) => [a] -> [a] -> [a]
+(<***>) :: [Double] -> [Double] -> [Double]
 (<***>) = zipWith (**)
 infixl 8 <***>
 
 -- Raising to a constant power
-(<**->) :: (Floating a) => [a] -> a -> [a]
+(<**->) :: [Double] -> Double -> [Double]
 --(<**->) = flip $ (flip $ zipWith (**)) . repeat
 (<**->) a b = zipWith (**) a (repeat b)
 infixl 8 <**->
