@@ -114,3 +114,9 @@ noiseWhite = map (\x -> fromIntegral x / 2^31-0.5) (noiseWhite' 0)
             where
                 a = (seed * 2147483629 + 2147483587) `mod` (2^31-1)
 
+--
+-- SILENCE!!!
+--
+
+silence :: [Double]
+silence = repeat 0

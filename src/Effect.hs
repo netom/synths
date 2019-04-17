@@ -11,8 +11,12 @@ import qualified Data.Sequence as Sq
 --
 
 -- Scaling with constant
+(<-*>) :: Double -> [Double] -> [Double]
+(<-*>) = (flip (zipWith (*))) . repeat
+infixl 7 <-*>
+
 (<*->) :: [Double] -> Double -> [Double]
-(<*->) = flip $ (flip (zipWith (*))) . repeat
+(<*->) = flip (<-*>)
 infixl 7 <*->
 
 -- Multiplying two streams (AM)

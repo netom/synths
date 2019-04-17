@@ -77,3 +77,21 @@ Executable rythm
                , Output
                , Time
                , Types
+
+Executable deutschland
+  build-depends: base
+               , containers
+               , bytestring
+               , WAVE
+
+  hs-source-dirs: src, examples
+  main-is: deutschland.hs
+  -- ghc-options: -O2 -prof -rtsopts -fprof-auto -auto-all -caf-all
+  ghc-options: -O3
+  other-modules: Chord
+               , Effect
+               , Filter
+               , Oscillator
+               , Output
+               , Time
+               , Types
