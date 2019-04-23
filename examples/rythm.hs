@@ -7,6 +7,10 @@ import Output
 import Oscillator
 import Data.Complex
 
+import Streamly
+import Streamly.Prelude ((|:), nil)
+import qualified Streamly.Prelude as S
+
 --
 -- Instruments
 --
@@ -129,4 +133,4 @@ music =
     kickloop1 <++> bassloop2
 
 main = do
-    pcmOutput music
+    pcmOutput $ S.fromList music

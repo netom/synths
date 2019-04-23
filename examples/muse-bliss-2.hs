@@ -7,6 +7,10 @@ import Output
 import Oscillator
 import Data.Complex
 
+import Streamly
+import Streamly.Prelude ((|:), nil)
+import qualified Streamly.Prelude as S
+
 arpeggiator :: [Frequency] -> Int -> [Frequency]
 arpeggiator _ 0 = []
 arpeggiator notes octaves = notes ++ arpeggiator (map (*2) notes) (octaves - 1)
@@ -31,4 +35,4 @@ music =
     (musearp $ doChord C2 tMin) )
 
 main = do
-    pcmOutput music
+    pcmOutput $ S.fromList music

@@ -10,6 +10,9 @@ Executable walking
   build-depends: base
                , containers
                , bytestring
+               , streamly
+               , vector
+               , transformers
                , WAVE
 
   hs-source-dirs: src, examples
@@ -28,6 +31,9 @@ Executable muse-bliss
   build-depends: base
                , containers
                , bytestring
+               , streamly
+               , vector
+               , transformers
                , WAVE
 
   hs-source-dirs: src, examples
@@ -46,6 +52,9 @@ Executable muse-bliss-2
   build-depends: base
                , containers
                , bytestring
+               , streamly
+               , vector
+               , transformers
                , WAVE
 
   hs-source-dirs: src, examples
@@ -64,6 +73,9 @@ Executable rythm
   build-depends: base
                , containers
                , bytestring
+               , streamly
+               , vector
+               , transformers
                , WAVE
 
   hs-source-dirs: src, examples
@@ -82,6 +94,9 @@ Executable deutschland
   build-depends: base
                , containers
                , bytestring
+               , streamly
+               , vector
+               , transformers
                , WAVE
 
   hs-source-dirs: src, examples

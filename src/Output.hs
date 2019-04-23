@@ -6,18 +6,26 @@ module Output
 import Types
 import Data.WAVE
 
+import Streamly
+import Streamly.Prelude ((|:), nil)
+import qualified Streamly.Prelude as S
+
 import qualified Data.ByteString.Lazy as B
 
-waveOutput :: String -> Int -> Stream -> IO ()
-waveOutput filename length stream =
-    --writeFile filename $ "RIFF" ++ (show $ map (\x -> [doubleToSample x]) $ take length stream)
+import Control.Monad.IO.Class (liftIO)
+
+waveOutput :: String -> Int -> SerialT IO Double -> IO ()
+waveOutput filename length stream = do
+    -- TODO: stream the wav file, seek and overwrite the length byte when finished.
+    s <- S.toList stream
     putWAVEFile
         filename 
-        $ WAVE (WAVEHeader 1 44100 16 (Just length)) $ map (\x -> [doubleToSample x]) $ take length stream
+        $ WAVE (WAVEHeader 1 44100 16 (Just length)) $ map (\x -> [doubleToSample x]) $ take length s
 
-pcmOutput :: Stream -> IO ()
-pcmOutput stream = do
-    B.putStr $ B.concat $ map (to4Chars . toUInt16) stream
+pcmOutput :: SerialT IO Double -> IO ()
+pcmOutput stream = runStream $ do
+    s <- stream
+    S.yieldM $ B.putStr $ to4Chars $ toUInt16 s
     where
         toUInt16 :: Double -> Int
         toUInt16 d = round $ (1 + max (-1) (min 1 d)) * (2 ^ 14 - 1)

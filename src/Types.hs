@@ -1,5 +1,9 @@
 module Types where
 
+import Streamly
+import Streamly.Prelude ((|:), nil)
+import qualified Streamly.Prelude as S
+
 type Frequency = Double
 type Time = Double
 type Sample = Double

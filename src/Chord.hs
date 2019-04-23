@@ -6,19 +6,19 @@ import Effect
 type Chord = [Double]
 
 
-tAug = [0, 4, 8] :: [Double]
-tMaj = [0, 4, 7] :: [Double]
-tMin = [0, 3, 7] :: [Double]
-tDim = [0, 3, 6] :: [Double]
+tAug = [0, 4, 8] :: Chord
+tMaj = [0, 4, 7] :: Chord
+tMin = [0, 3, 7] :: Chord
+tDim = [0, 3, 6] :: Chord
 
-sDim    = [0, 3, 6,  9] :: [Double]
-sHDim   = [0, 3, 6, 10] :: [Double]
-sMin    = [0, 3, 7, 10] :: [Double]
-sMinMaj = [0, 3, 7, 11] :: [Double]
-sAug    = [0, 4, 8, 10] :: [Double]
-sDom    = [0, 4, 7, 10] :: [Double]
-sMaj    = [0, 4, 7, 11] :: [Double]
-sAugMaj = [0, 4, 8, 11] :: [Double]
+sDim    = [0, 3, 6,  9] :: Chord
+sHDim   = [0, 3, 6, 10] :: Chord
+sMin    = [0, 3, 7, 10] :: Chord
+sMinMaj = [0, 3, 7, 11] :: Chord
+sAug    = [0, 4, 8, 10] :: Chord
+sDom    = [0, 4, 7, 10] :: Chord
+sMaj    = [0, 4, 7, 11] :: Chord
+sAugMaj = [0, 4, 8, 11] :: Chord
 
 chord :: Instrument -> [Frequency] -> Chord -> [Sample]
 chord i fs c = mixN $ map i $ map (\x -> map (*2**(x/12)) fs) c
