@@ -26,7 +26,7 @@ q   = 5 * tw
 h   = 2 * q
 wh  = 2 * h
 ft  = 4 * tw
-ft2 = 2 * ft
+ft2 = 20 * ft
 
 mainIns note len = take len $ eADSR 0.01 0.01 0.9 0.01 0.1 <**> oscSawtooth (repeat $ freq note)
 
@@ -51,12 +51,17 @@ mainThemeRaw' = S.fromList $ cycle samples
 mainTheme' = resofour' resonance' (S.fromList filterLfo) mainThemeRaw'
 mainTheme'' = fourpole' resonance' (S.fromList filterLfo) mainThemeRaw'
 
+mkMainTheme''' = do
+    onePole <- mkFourPole' resonance' (S.fromList filterLfo) mainThemeRaw'
+    return onePole
+
 music :: [Double]
 music = (reverb 0.7 0.95 $ echo 0.2 ft2 $ mainTheme) <*-> 4
     
 mkMusic' :: IO (S.Stream IO Double)
 mkMusic' = do
-    echo <- mkEcho' ft2 0.2 mainTheme''
+    mainTheme''' <- mkMainTheme'''
+    echo <- mkEcho' ft2 0.2 mainTheme'''
     reverb <- mkReverb' 0.7 0.95 echo
     return $ (* 4) <$> reverb
 

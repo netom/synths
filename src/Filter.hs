@@ -34,11 +34,28 @@ onepole a1s b0s xs = scanl (\y (a1, b0, x) -> b0 * x - a1 * y) 0 $ zip3 a1s b0s 
 onepole' :: S.Stream IO Double -> S.Stream IO Double -> S.Stream IO Double -> S.Stream IO Double
 onepole' a1s b0s xs = S.scanl (\y (a1, b0, x) -> b0 * x - a1 * y) 0 $ S.zipWith3 (,,) a1s b0s xs
 
+mkOnePole' :: S.Stream IO Double -> S.Stream IO Double -> S.Stream IO Double -> IO (S.Stream IO Double)
+mkOnePole' a1s b0s xs = do
+    y :: IORef Double <- newIORef 0
+
+    return $ (flip S.mapM) (S.zipWith3 (,,) a1s b0s xs) $ \(a1, b0, x) -> do
+        oldy <- readIORef y
+        let newy = b0 * x - a1 * oldy
+        writeIORef y newy
+        return newy
+
 fourpole :: [Double] -> [Double] -> [Double] -> [Double]
 fourpole a1s b0s = onepole a1s b0s . onepole a1s b0s . onepole a1s b0s . onepole a1s b0s
 
 fourpole' :: S.Stream IO Double -> S.Stream IO Double -> S.Stream IO Double -> S.Stream IO Double
 fourpole' a1s b0s = onepole' a1s b0s . onepole' a1s b0s . onepole' a1s b0s . onepole' a1s b0s
+
+mkFourPole' :: S.Stream IO Double -> S.Stream IO Double -> S.Stream IO Double -> IO (S.Stream IO Double)
+mkFourPole' a1s b0s xs
+    =   mkOnePole' a1s b0s xs
+    >>= (mkOnePole' a1s b0s)
+    >>= (mkOnePole' a1s b0s)
+    >>= (mkOnePole' a1s b0s)
 
 -- See: Resonance Tuning for the digital Moog Filter
 -- http://www.rs-met.com/documents/dsp/ResonanceTuningForTheDigitalMoogFilter.pdf
