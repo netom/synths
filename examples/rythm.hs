@@ -7,9 +7,7 @@ import Output
 import Oscillator
 import Data.Complex
 
-import Streamly
-import Streamly.Prelude ((|:), nil)
-import qualified Streamly.Prelude as S
+import qualified Data.Vector.Fusion.Stream.Monadic as S
 
 --
 -- Instruments
@@ -133,4 +131,4 @@ music =
     kickloop1 <++> bassloop2
 
 main = do
-    pcmOutput $ S.fromList music
+    pcmOutput' $ S.fromList music

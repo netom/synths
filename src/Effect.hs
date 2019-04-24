@@ -1,4 +1,6 @@
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE RankNTypes #-}
+
 module Effect where
 
 import Time
@@ -8,11 +10,8 @@ import Data.List
 import Data.IORef
 import qualified Data.Sequence as Sq
 
-import Streamly
-import Streamly.Prelude ((|:), nil)
-import qualified Streamly.Prelude as S
-
 import qualified Data.Vector.Unboxed.Mutable as V
+import qualified Data.Vector.Fusion.Stream.Monadic as S
 
 import Control.Monad
 import Control.Monad.ST
@@ -97,20 +96,22 @@ echo q n xs = map snd $ scanl foldfunc (Sq.replicate n 0, 0) xs
                 s = Sq.index cbuf 0
                 out = x * 0.1 + s * q
 
-echo' :: Double -> Int -> SerialT IO Double -> SerialT IO Double
-echo' decay n stream = do
-    buf :: V.MVector RealWorld Double <- S.yieldM $ V.new n
-    pos :: IORef Int <- S.yieldM $ newIORef 0
+--echo' :: V.MVector RealWorld Double -> IORef Int -> Double -> Int -> S.Stream IO Double -> S.Stream IO Double
+--echo' buf pos decay n stream = 
 
-    (flip S.mapM) stream $ \s -> do
+mkEcho' :: Int -> Double -> S.Stream IO Double -> IO (S.Stream IO Double)
+mkEcho' n decay stream = do
+    buf :: V.MVector RealWorld Double <- V.new n
+    pos :: IORef Int <- newIORef 0
+    return $ (flip S.mapM) stream $ \s -> do
         currentPos <- readIORef pos
         currentBufVal <- V.read buf currentPos
-
+    
         let output = s * 0.1 + currentBufVal * decay
-
+    
         V.write buf currentPos output
         writeIORef pos $ (currentPos + 1) `mod` n
-
+    
         return output
 
 reverb wet decay xs =
@@ -125,17 +126,31 @@ reverb wet decay xs =
     echo decay 5773 xs <*-> 0.1 <++>
     echo decay 7489 xs <*-> 0.1) <*-> wet
 
-reverb' :: Double -> Double -> SerialT IO Double -> SerialT IO Double
-reverb' wet decay xs = zipSerially $ go
-    <$> serially xs
-    <*> serially (echo' decay 941 xs)
-    <*> serially (echo' decay 1223 xs)
-    <*> serially (echo' decay 1423 xs)
-    <*> serially (echo' decay 2111 xs)
-    <*> serially (echo' decay 2903 xs)
-    <*> serially (echo' decay 3571 xs)
-    <*> serially (echo' decay 4229 xs)
-    <*> serially (echo' decay 5773 xs)
-    <*> serially (echo' decay 7489 xs)
+zipWith10 :: Monad m => (a -> b -> c -> d -> e -> f -> g -> h -> i -> j -> k)
+    -> S.Stream m a -> S.Stream m b -> S.Stream m c -> S.Stream m d -> S.Stream m e
+    -> S.Stream m f -> S.Stream m g -> S.Stream m h -> S.Stream m i -> S.Stream m j
+    -> S.Stream m k
+zipWith10 fn sa sb sc sd se sf sg sh si sj
+    = S.zipWith
+        (\(a, b, c, d, e) (f, g, h, i, j) -> fn a b c d e f g h i j)
+        (S.zipWith5 (,,,,) sa sb sc sd se)
+        (S.zipWith5 (,,,,) sf sg sh si sj)
+ 
+{-# INLINE zipWith10 #-}
+
+mkReverb' :: Double -> Double -> S.Stream IO Double -> IO (S.Stream IO Double)
+mkReverb' wet decay xs = do
+    e1 <- mkEcho' 941  decay xs
+    e2 <- mkEcho' 1223 decay xs
+    e3 <- mkEcho' 1423 decay xs
+    e4 <- mkEcho' 2111 decay xs
+    e5 <- mkEcho' 2903 decay xs
+    e6 <- mkEcho' 3571 decay xs
+    e7 <- mkEcho' 4229 decay xs
+    e8 <- mkEcho' 5773 decay xs
+    e9 <- mkEcho' 7489 decay xs
+
+    return $ zipWith10 go xs e1 e2 e3 e4 e5 e6 e7 e8 e9
+
     where
         go x e1 e2 e3 e4 e5 e6 e7 e8 e9 = x * (1 - wet) + (0.1*e1+0.1*e2+0.1*e3+0.1*e4+0.1*e5+0.1*e6+0.1*e7+0.1*e8+0.1*e9) * wet

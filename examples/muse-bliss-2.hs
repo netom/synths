@@ -7,9 +7,7 @@ import Output
 import Oscillator
 import Data.Complex
 
-import Streamly
-import Streamly.Prelude ((|:), nil)
-import qualified Streamly.Prelude as S
+import qualified Data.Vector.Fusion.Stream.Monadic as S
 
 arpeggiator :: [Frequency] -> Int -> [Frequency]
 arpeggiator _ 0 = []
@@ -35,4 +33,4 @@ music =
     (musearp $ doChord C2 tMin) )
 
 main = do
-    pcmOutput $ S.fromList music
+    pcmOutput' $ S.fromList music

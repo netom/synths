@@ -7,13 +7,7 @@ import Output
 import Oscillator
 import Data.Complex
 
-
-import Streamly
-import Streamly.Prelude ((|:), nil)
-import qualified Streamly.Prelude as S
-
-import Control.DeepSeq
-import Control.Exception (evaluate)
+import qualified Data.Vector.Fusion.Stream.Monadic as S
 
 --
 -- Assembly, master
@@ -21,8 +15,11 @@ import Control.Exception (evaluate)
 
 filterLfo = (oscSin (repeat 0.1)) <*-> 0.2 <+-> 0.3 <++> (oscSin (repeat 3)) <*-> 0.099
 
-resonance :: SerialT IO Double
-resonance = S.repeat 0.1
+resonance :: [Double]
+resonance = repeat 0.1
+
+resonance' :: S.Stream IO Double
+resonance' = S.fromList $ repeat 0.1
 
 tw  = 2700
 q   = 5 * tw
@@ -33,7 +30,15 @@ ft2 = 2 * ft
 
 mainIns note len = take len $ eADSR 0.01 0.01 0.9 0.01 0.1 <**> oscSawtooth (repeat $ freq note)
 
-mainThemeRaw = samples `deepseq` S.take 441000 $ S.fromList $ cycle samples
+mainTheme = resofour resonance filterLfo $ cycle (
+        mainIns A3 q ++
+        mainIns A4 q ++
+        mainIns E4 h ++
+        mainIns G4 h ++
+        mainIns D4 h
+    )
+
+mainThemeRaw' = S.fromList $ cycle samples
     where
         samples =
             (  mainIns A3 q
@@ -43,20 +48,17 @@ mainThemeRaw = samples `deepseq` S.take 441000 $ S.fromList $ cycle samples
             <> mainIns D4 h
             )
 
-mainTheme = resofour' resonance (S.fromList filterLfo) mainThemeRaw
+mainTheme' = resofour' resonance' (S.fromList filterLfo) mainThemeRaw'
+mainTheme'' = fourpole' resonance' (S.fromList filterLfo) mainThemeRaw'
 
---mainTheme = S.fromList $ cycle (
---        mainIns A3 q ++
---        mainIns A4 q ++
---        mainIns E4 h ++
---        mainIns G4 h ++
---        mainIns D4 h
---    )
-
-music :: SerialT IO Double
-music = do
-    x <- reverb' 0.7 0.95 $ echo' 0.2 ft2 mainTheme
-    S.yield $ x * 4
+music :: [Double]
+music = (reverb 0.7 0.95 $ echo 0.2 ft2 $ mainTheme) <*-> 4
+    
+mkMusic' :: IO (S.Stream IO Double)
+mkMusic' = do
+    echo <- mkEcho' ft2 0.2 mainTheme''
+    reverb <- mkReverb' 0.7 0.95 echo
+    return $ (* 4) <$> reverb
 
 --
 -- walking | pv > /dev/null
@@ -64,4 +66,5 @@ music = do
 -- Original:               160 - 170 KiB/s
 -- Streamed echo & reverb: 200 - 220 KiB/s
 main = do
-    pcmOutput music
+    music' <- mkMusic'
+    pcmOutput' music'

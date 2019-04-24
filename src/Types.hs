@@ -7,7 +7,6 @@ import qualified Streamly.Prelude as S
 type Frequency = Double
 type Time = Double
 type Sample = Double
-type Stream = [Sample]
 
 data Note =
     C0 | Cs0 | D0 | Eb0 | E0 | F0 | Fs0 | G0 | Gs0 | A0 | Bb0 | B0 |
