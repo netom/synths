@@ -1,6 +1,5 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE ApplicativeDo #-}
-{-# LANGUAGE BangPatterns #-}
 
 module Filter where
 
@@ -27,6 +26,13 @@ feedback' :: SerialT IO Double -> (SerialT IO Double -> SerialT IO Double) -> Se
 feedback' coeffs func xs = do
     y :: IORef Double <- S.yieldM $ newIORef 0
 
+    --let tuples = zipSerially $ (,) <$> serially xs <*> serially coeffs
+    --func $ (flip S.mapM) tuples $ \(x, coeff) -> do
+    --    oldy <- readIORef y
+    --    let newy = x - oldy * coeff
+    --    writeIORef y newy
+    --    return newy
+
     func $ (>>= S.yieldM) $ zipSerially $ do
         x <- serially xs
         coeff <- serially coeffs
@@ -34,7 +40,7 @@ feedback' coeffs func xs = do
             oldy <- readIORef y
             let newy = x - oldy * coeff
             writeIORef y newy
-            return $ x * coeff
+            return newy
 
 onepole :: [Double] -> [Double] -> [Double] -> [Double]
 onepole a1s b0s xs = scanl (\y (a1, b0, x) -> b0 * x - a1 * y) 0 $ zip3 a1s b0s xs
@@ -46,23 +52,22 @@ onepole' :: SerialT IO Double -> SerialT IO Double -> SerialT IO Double -> Seria
 onepole' a1s b0s xs = do
     y :: IORef Double <- S.yieldM $ newIORef 0
 
-    let tuples = zipSerially $ (,,) <$> serially xs <*> serially a1s <*> serially b0s
+    --let tuples = zipSerially $ (,,) <$> serially xs <*> serially a1s <*> serially b0s
+    --(flip S.mapM) tuples $ \(x, a1, b0) -> do
+    --    oldy <- readIORef y
+    --    let newy = b0 * x - a1 * oldy
+    --    writeIORef y newy
+    --    return newy
 
-    (flip S.mapM) tuples $ \(x, a1, b0) -> do
-        oldy <- readIORef y
-        let newy = b0 * x - a1 * oldy
-        writeIORef y newy
-        return newy
-
-    --(>>= S.yieldM) $ zipSerially $ do
-    --    x  <- serially xs
-    --    a1 <- serially a1s
-    --    b0 <- serially b0s
-    --    return $ do
-    --        oldy <- readIORef y
-    --        let newy = b0 * x - a1 * oldy
-    --        writeIORef y newy
-    --        return newy
+    (>>= S.yieldM) $ zipSerially $ do
+        x  <- serially xs
+        a1 <- serially a1s
+        b0 <- serially b0s
+        return $ do
+            oldy <- readIORef y
+            let newy = b0 * x - a1 * oldy
+            writeIORef y newy
+            return newy
 
 fourpole :: [Double] -> [Double] -> [Double] -> [Double]
 fourpole a1s b0s = onepole a1s b0s . onepole a1s b0s . onepole a1s b0s . onepole a1s b0s
@@ -85,7 +90,7 @@ resofour resonances cfnorms = feedback ks $ fourpole a1s b0s
         ks  = resonances <//> g2s <**-> 2
 
 resofour' :: SerialT IO Double -> SerialT IO Double -> SerialT IO Double -> SerialT IO Double
-resofour' resonances cfnorms = feedback' ks $ fourpole' a1s b0s
+resofour' resonances cfnorms = feedback' (serially ks) $ fourpole' (serially a1s) (serially b0s)
     where
         omegacs = (* pi) <$> cfnorms
 
@@ -93,20 +98,20 @@ resofour' resonances cfnorms = feedback' ks $ fourpole' a1s b0s
 
         cs  = cos <$> omegacs
 
-        ts  = (\(!x) -> tan $ (x - pi) / 4) <$> omegacs
+        ts  = (\x -> tan $ (x - pi) / 4) <$> omegacs
 
-        a1s = zipSerially $ (\(!t) (!s) (!c) -> t / (s - c * t))
+        a1s = zipSerially $ (\t s c -> t / (s - c * t))
             <$> serially ts
             <*> serially ss
             <*> serially cs
 
         b0s = (+ 1) <$> a1s
 
-        g2s = zipSerially $ (\(!b0) (!a1) (!c) -> b0 * 2 / (a1 * 2 + a1 * c * 2 + 1))
+        g2s = zipSerially $ (\b0 a1 c -> b0 * 2 / (a1 * 2 + a1 * c * 2 + 1))
             <$> serially b0s
             <*> serially a1s
             <*> serially cs
 
-        ks  = zipSerially $ (\(!resonance) (!g2) -> resonance / g2 * 2)
+        ks  = zipSerially $ (\resonance g2 -> resonance / g2 * 2)
             <$> serially resonances
             <*> serially g2s

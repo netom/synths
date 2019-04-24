@@ -9,3 +9,6 @@
 *.ps
 *.mp3
 .stack-work
+*.hp
+*.svg
+*.prof

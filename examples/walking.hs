@@ -12,6 +12,9 @@ import Streamly
 import Streamly.Prelude ((|:), nil)
 import qualified Streamly.Prelude as S
 
+import Control.DeepSeq
+import Control.Exception (evaluate)
+
 --
 -- Assembly, master
 --
@@ -30,14 +33,17 @@ ft2 = 2 * ft
 
 mainIns note len = take len $ eADSR 0.01 0.01 0.9 0.01 0.1 <**> oscSawtooth (repeat $ freq note)
 
-mainTheme = resofour' resonance (S.fromList filterLfo) $ S.fromList $ cycle (
---mainTheme = onepole' (S.repeat 0.5) (S.repeat 0.5) $ S.fromList $ cycle (
-    mainIns A3 q ++
-        mainIns A4 q ++
-        mainIns E4 h ++
-        mainIns G4 h ++
-        mainIns D4 h
-    )
+mainThemeRaw = samples `deepseq` S.take 441000 $ S.fromList $ cycle samples
+    where
+        samples =
+            (  mainIns A3 q
+            <> mainIns A4 q
+            <> mainIns E4 h
+            <> mainIns G4 h
+            <> mainIns D4 h
+            )
+
+mainTheme = resofour' resonance (S.fromList filterLfo) mainThemeRaw
 
 --mainTheme = S.fromList $ cycle (
 --        mainIns A3 q ++

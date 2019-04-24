@@ -13,12 +13,13 @@ Executable walking
                , streamly
                , vector
                , transformers
+               , deepseq
                , WAVE
 
   hs-source-dirs: src, examples
   main-is: walking.hs
-  -- ghc-options: -O2 -prof -rtsopts -fprof-auto -auto-all -caf-all
-  ghc-options: -O3
+  ghc-options: -O2 -prof -rtsopts -fprof-auto
+  --ghc-options: -O3
   other-modules: Chord
                , Effect
                , Filter
