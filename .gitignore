@@ -1,14 +1,3 @@
-*.o
-*.hi
-*.bin
-*.wav
-*.mp3
-*.aux
-*.hp
-*.prof
-*.ps
-*.mp3
-.stack-work
-*.hp
-*.svg
-*.prof
+.stack-work/
+synths.cabal
+*~
