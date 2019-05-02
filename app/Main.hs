@@ -63,19 +63,31 @@ bmapI f = bmapMI (return . f)
 bmapV :: (Double -> Double) -> DV -> IO ()
 bmapV f = bmapMV (return . f)
 
-newDV :: Int -> IO DV
-newDV n = do
+newDV :: Int -> Int -> IO DV
+newDV n i = do
     dvV <- V.new n
-    dvI <- newIORef 0
+    dvI <- newIORef i
     return DV{..}
 
 runDV :: DV -> (DV -> IO ()) -> IO ()
 runDV dv a = a dv
 
-runDVForever :: DV -> (DV -> IO ()) -> IO ()
-runDVForever dv a = forever $ do
-    runDV dv a
-    stepDVI dv
+runDVForever :: Int -> (DV -> IO ()) -> IO ()
+runDVForever n a = do
+    dv <- newDV 1024 0
+    forever $ do
+        runDV dv a
+        stepDVI dv
+
+runDVFor :: Int -> Int -> (DV -> IO ()) -> IO ()
+runDVFor n steps a = do
+    dv <- newDV n 0
+    forM_ [1..steps `div` n] $ \i -> do
+        runDV dv a
+        stepDVI dv
+    i <- readIORef $ dvI dv
+    dv' <- newDV (steps `mod` n) i
+    runDV dv' a
 
 pcmOutput :: DV -> IO ()
 pcmOutput dv@DV{..} = do
@@ -101,12 +113,12 @@ i2nt :: Int -> Double
 i2nt i = fromIntegral i / sr
 
 -- Index time to radial time
-i2rt :: Int -> Double
-i2rt i = 2 * pi * i2nt i
+i2rt :: Double -> Double
+i2rt t = 2 * pi * t
 
--- Frequency -> Sample index -> Sample
-sineOscillator :: Double -> Int -> Double
-sineOscillator f i = 0.2 * sin (f * i2rt i)
+-- Frequency -> Time -> Sample
+sineOscillator :: Double -> Double -> Double
+sineOscillator f t = 0.2 * sin (f * i2rt t)
 
 -- Play the output with:
 -- stack exec buf-exe | play -r 44100 -b 16 -c 1 --endian little -t raw -e unsigned-integer -
@@ -115,7 +127,6 @@ sineOscillator f i = 0.2 * sin (f * i2rt i)
 -- stack exec buf-exe | pv > /dev/null
 main = do
     putStrLn "Hello"
-    dv <- newDV 1024
-    runDVForever dv $ \dv -> do
+    runDVFor 1024 44100 $ \dv -> do
         bmapI (sineOscillator $ 440) dv
         pcmOutput dv
