@@ -6,7 +6,7 @@ module Main where
 import Control.Monad
 import Control.Monad.Primitive
 import Control.Monad.ST
-import Data.ByteArray
+import Data.ByteArray hiding (take)
 import Data.IORef
 import Data.Word
 import Foreign.Ptr
@@ -112,13 +112,38 @@ sr = 44100
 i2nt :: Int -> Double
 i2nt i = fromIntegral i / sr
 
--- Index time to radial time
-i2rt :: Double -> Double
-i2rt t = 2 * pi * t
-
 -- Frequency -> Time -> Sample
 sineOscillator :: Double -> Double -> Double
-sineOscillator f t = 0.2 * sin (f * i2rt t)
+sineOscillator f t = 0.2 * sin (f * 2 * pi * t)
+
+-- Differentiator
+mkDiff :: IO (Double -> IO Double)
+mkDiff = do
+    x'ref :: IORef Double <- newIORef 0
+    return $ \x -> do
+        x' <- readIORef x'ref
+        writeIORef x'ref x
+        return $ x - x'
+
+-- Integrator
+mkInt :: IO (Double -> IO Double)
+mkInt = do
+    y'ref :: IORef Double <- newIORef 0
+    return $ \x -> do
+        y' <- readIORef y'ref
+        let y = x + y'
+        writeIORef y'ref y
+        return y
+
+-- Frequency stream -> Time stream -> Amplitude stream
+mkSineOscillator :: IO (Double -> Double -> IO Double)
+mkSineOscillator = do
+    d <- mkDiff
+    i <- mkInt
+    return $ \f t -> do
+        t'  <- d t
+        t'' <- i $ f * t'
+        return $ 0.2 * sin (2 * pi * t'')
 
 -- Play the output with:
 -- stack exec buf-exe | play -r 44100 -b 16 -c 1 --endian little -t raw -e unsigned-integer -
@@ -127,6 +152,9 @@ sineOscillator f t = 0.2 * sin (f * i2rt t)
 -- stack exec buf-exe | pv > /dev/null
 main = do
     putStrLn "Hello"
-    runDVFor 1024 44100 $ \dv -> do
-        bmapI (sineOscillator $ 440) dv
+    so <- mkSineOscillator
+    runDVForever 1024 $ \dv -> do
+        bmapI i2nt dv
+        bmapMV (so 440) dv
         pcmOutput dv
+
