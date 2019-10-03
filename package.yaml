@@ -33,10 +33,12 @@ executables:
   synths:
     main:                Main.hs
     source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
+    #ghc-options:
+    #- -threaded
+    #- -rtsopts
+    #- -with-rtsopts=-N
+    #- -fllvm
+    #- -msse2
     dependencies:
     - synths
 
