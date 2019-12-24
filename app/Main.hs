@@ -31,6 +31,8 @@ data DV = DV
     , dvI :: IORef Int
     }
 
+type DV' = V.MVector (PrimState IO) Double
+
 -- Increase the index start value by the length of the buffer
 stepDVI :: DV -> IO ()
 stepDVI DV{..} = atomicModifyIORef' dvI (\i -> (i + V.length dvV, ()))
